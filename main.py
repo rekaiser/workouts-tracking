@@ -1,6 +1,6 @@
 import sys
-from PySide2.QtCore import Qt
-from PySide2.QtWidgets import (QApplication, QWidget, QMainWindow, QSplitter, QVBoxLayout, QHBoxLayout, QLabel,
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (QApplication, QWidget, QMainWindow, QSplitter, QVBoxLayout, QHBoxLayout, QLabel,
                                QGroupBox, QGridLayout, QComboBox, QTableWidget, QLineEdit, QPushButton,
                                QTableWidgetItem)
 
