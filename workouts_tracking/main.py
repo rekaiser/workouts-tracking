@@ -154,6 +154,8 @@ class ApplicationWindow(QMainWindow):
 def main():
     q_app = create_app(sys.argv)
     exit_code = run_app(q_app)
+    if exit_code != 0:
+        print(f"Program exited with failure: Exit Code {exit_code}")
 
 
 if __name__ == '__main__':
