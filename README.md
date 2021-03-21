@@ -11,4 +11,4 @@ TBA
 TBA
 
 ## License
-[GPLv3](./LICENSE.md)
+[GPLv3](LICENSE)
