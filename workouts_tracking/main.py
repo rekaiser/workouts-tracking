@@ -1,8 +1,11 @@
 import sys
+
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import (QApplication, QWidget, QMainWindow, QSplitter, QVBoxLayout, QHBoxLayout, QLabel,
+from PySide6.QtWidgets import (QWidget, QMainWindow, QSplitter, QVBoxLayout, QHBoxLayout, QLabel,
                                QGroupBox, QGridLayout, QComboBox, QTableWidget, QLineEdit, QPushButton,
                                QTableWidgetItem)
+
+from .gui import run_app, create_app
 
 
 class Exercise:
@@ -149,12 +152,8 @@ class ApplicationWindow(QMainWindow):
 
 
 def main():
-    q_app = QApplication(sys.argv)
-    q_app.setApplicationName("Workouts Tracking")
-
-    main_window = ApplicationWindow()
-    main_window.show()
-    q_app.exec_()
+    q_app = create_app(sys.argv)
+    exit_code = run_app(q_app)
 
 
 if __name__ == '__main__':
