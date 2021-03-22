@@ -1,17 +1,8 @@
-import sys
 from time import sleep
 
-import pytest
-from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtWidgets import (QApplication, QSplitter, QLayout, QWidget, QHBoxLayout,)
 
-from workouts_tracking.gui import create_app, create_and_show_main_window
-
-
-@pytest.fixture(scope="session")
-def q_app_fixture():
-    q_app = create_app(sys.argv)
-    yield q_app
-    del q_app
+from workouts_tracking.gui import create_and_show_main_window
 
 
 class TestCaseLoadGui:
