@@ -13,7 +13,7 @@ def run_app(q_app: QApplication):
 
 
 def create_and_show_main_window():
-    main_window = QMainWindow()
+    main_window = MainWindow()
     main_window.show()
     return main_window
 
