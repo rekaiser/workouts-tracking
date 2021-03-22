@@ -9,6 +9,15 @@ def create_app(sys_argv):
 
 
 def run_app(q_app: QApplication):
+    return q_app.exec_()
+
+
+def create_and_show_main_window():
     main_window = QMainWindow()
     main_window.show()
-    return q_app.exec_()
+    return main_window
+
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()

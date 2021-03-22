@@ -4,7 +4,7 @@ from time import sleep
 import pytest
 from PySide6.QtWidgets import QApplication, QMainWindow
 
-from workouts_tracking.gui import create_app, run_app
+from workouts_tracking.gui import create_app, create_and_show_main_window
 
 
 @pytest.fixture(scope="session")
@@ -21,9 +21,8 @@ class TestCaseLoadGui:
     def test_app_name(self, q_app_fixture):
         assert q_app_fixture.applicationName() == "Workouts Tracking"
 
-    def test_open_window(self):
-        qmw = QMainWindow()
-        qmw.show()
-        sleep(3)
-        qmw.close()
-        assert qmw.isWindow()
+    def test_open_close_window(self):
+        main_window = create_and_show_main_window()
+        sleep(0.05)
+        assert main_window.isWindow()
+        assert main_window.close()
