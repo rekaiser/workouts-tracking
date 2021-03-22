@@ -1,6 +1,6 @@
 from time import sleep
 
-from PySide6.QtWidgets import (QApplication, QSplitter, QLayout, QWidget, QHBoxLayout,)
+from PySide6.QtWidgets import (QApplication,)
 
 from workouts_tracking.gui import create_and_show_main_window
 

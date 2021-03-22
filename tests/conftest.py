@@ -16,4 +16,3 @@ def q_app_fixture():
 def main_window_fixture(q_app_fixture):
     main_window = create_and_show_main_window()
     yield main_window
-
