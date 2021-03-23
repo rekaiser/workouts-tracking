@@ -16,3 +16,8 @@ def q_app_fixture():
 def main_window_fixture(q_app_fixture):
     main_window = create_and_show_main_window()
     yield main_window
+
+
+@pytest.fixture(scope="session")
+def central_widget_fixture(main_window_fixture):
+    yield main_window_fixture.centralWidget()

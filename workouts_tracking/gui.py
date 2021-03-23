@@ -1,4 +1,6 @@
-from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout, QWidget,
+                               QVBoxLayout, QTableWidget, QLabel, QFrame,
+                               )
 from .constants import APPLICATION_NAME
 
 
@@ -22,25 +24,45 @@ def create_and_show_main_window():
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.main_widget = MainWidget(self)
-        self.setCentralWidget(self.main_widget)
+        self.widget_main = MainWidget(self)
+        self.setCentralWidget(self.widget_main)
 
 
 class MainWidget(QSplitter):
     def __init__(self, parent):
         super().__init__(parent)
         self.setLayout(QHBoxLayout(self))
-        self.left_widget = LeftWidget(self)
-        self.right_widget = RightWidget(self)
-        self.layout().addWidget(self.left_widget)
-        self.layout().addWidget(self.right_widget)
+        self.widget_left = LeftWidget(self)
+        self.widget_right = RightWidget(self)
+        self.layout().addWidget(self.widget_left)
+        self.layout().addWidget(self.widget_right)
 
 
 class LeftWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
+        self.setLayout(QVBoxLayout(self))
+        self.label_workouts = QLabel("Some Text", self)
+        self.layout().addWidget(self.label_workouts)
+        self.table_workouts = QTableWidget(self)
+        self.layout().addWidget(self.table_workouts)
+        self.frame_hline = HLineSunken(self)
+        self.layout().addWidget(self.frame_hline)
+        self.label_performed_exercises = QLabel("Some different text!!!", self)
+        self.layout().addWidget(self.label_performed_exercises)
+        self.table_performed_exercises = QTableWidget(self)
+        self.layout().addWidget(self.table_performed_exercises)
 
 
 class RightWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
+
+
+class HLineSunken(QFrame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setFrameStyle(QFrame.HLine)
+        self.setFrameShadow(QFrame.Sunken)
+        self.setLineWidth(3)
+        self.setMidLineWidth(1)

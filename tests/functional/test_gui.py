@@ -1,5 +1,3 @@
-from time import sleep
-
 from PySide6.QtWidgets import (QApplication,)
 
 from workouts_tracking.gui import create_and_show_main_window
@@ -14,6 +12,5 @@ class TestCaseLoadGui:
 
     def test_open_close_window(self):
         main_window = create_and_show_main_window()
-        sleep(0.05)
         assert main_window.isWindow()
         assert main_window.close()
