@@ -59,15 +59,15 @@ class RightWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.setLayout(QVBoxLayout(self))
-        self.group_box_database = QGroupBox("Some name of the 1. group box", self)
+        self.group_box_database = QGroupBox("Database Actions", self)
         self.layout().addWidget(self.group_box_database)
-        self.group_box_workout = QGroupBox("Some name of 2. group box", self)
+        self.group_box_workout = QGroupBox("Workout Actions", self)
         self.layout().addWidget(self.group_box_workout)
-        self.label_available_exercises = QLabel("Label for Table below", self)
+        self.label_available_exercises = QLabel("Available Exercises", self)
         self.layout().addWidget(self.label_available_exercises)
         self.table_available_exercises = QTableWidget(self)
         self.layout().addWidget(self.table_available_exercises)
-        self.group_box_exercise = QGroupBox("Some name for this box", self)
+        self.group_box_exercise = QGroupBox("Exercise Actions", self)
         self.layout().addWidget(self.group_box_exercise)
 
 
