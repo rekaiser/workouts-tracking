@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout, QWidget,
-                               QVBoxLayout, QTableWidget, QLabel, QFrame,
+                               QVBoxLayout, QTableWidget, QLabel, QFrame, QGroupBox,
                                )
 from .constants import APPLICATION_NAME
 
@@ -58,6 +58,17 @@ class LeftWidget(QWidget):
 class RightWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
+        self.setLayout(QVBoxLayout(self))
+        self.group_box_database = QGroupBox("Some name of the 1. group box", self)
+        self.layout().addWidget(self.group_box_database)
+        self.group_box_workout = QGroupBox("Some name of 2. group box", self)
+        self.layout().addWidget(self.group_box_workout)
+        self.label_available_exercises = QLabel("Label for Table below", self)
+        self.layout().addWidget(self.label_available_exercises)
+        self.table_available_exercises = QTableWidget(self)
+        self.layout().addWidget(self.table_available_exercises)
+        self.group_box_exercise = QGroupBox("Some name for this box", self)
+        self.layout().addWidget(self.group_box_exercise)
 
 
 class HLineSunken(QFrame):

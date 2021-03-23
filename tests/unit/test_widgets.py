@@ -43,7 +43,7 @@ class TestGuiLayout:
             (cwf.widget_right.group_box_database, QGroupBox),
             (cwf.widget_right.group_box_workout, QGroupBox),
             (cwf.widget_right.label_available_exercises, QLabel),
-            (cwf.widget_right.table_available_erecises, QTableWidget),
+            (cwf.widget_right.table_available_exercises, QTableWidget),
             (cwf.widget_right.group_box_exercise, QGroupBox),
         ]
         for i, (widget, widget_class) in enumerate(list_widgets_widget_classes):
