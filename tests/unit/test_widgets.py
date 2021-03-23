@@ -22,14 +22,14 @@ class TestGuiLayout:
         left_layout = cwf.widget_left.layout()
         assert isinstance(left_layout, QVBoxLayout)
 
-        list_widgets_widget_classes = [
+        list_widgets_widget_classes_left = [
             (cwf.widget_left.label_workouts, QLabel),
             (cwf.widget_left.table_workouts, QTableWidget),
             (cwf.widget_left.frame_hline, HLineSunken),
             (cwf.widget_left.label_performed_exercises, QLabel),
             (cwf.widget_left.table_performed_exercises, QTableWidget),
         ]
-        for i, (widget, widget_class) in enumerate(list_widgets_widget_classes):
+        for i, (widget, widget_class) in enumerate(list_widgets_widget_classes_left):
             assert isinstance(left_layout.itemAt(i).widget(), widget_class)
             assert isinstance(widget, widget_class)
 
@@ -39,14 +39,14 @@ class TestGuiLayout:
         right_layout = cwf.widget_right.layout()
         assert isinstance(right_layout, QVBoxLayout)
 
-        list_widgets_widget_classes = [
+        list_widgets_widget_classes_right = [
             (cwf.widget_right.group_box_database, QGroupBox),
             (cwf.widget_right.group_box_workout, QGroupBox),
             (cwf.widget_right.label_available_exercises, QLabel),
             (cwf.widget_right.table_available_exercises, QTableWidget),
             (cwf.widget_right.group_box_exercise, QGroupBox),
         ]
-        for i, (widget, widget_class) in enumerate(list_widgets_widget_classes):
+        for i, (widget, widget_class) in enumerate(list_widgets_widget_classes_right):
             assert isinstance(right_layout.itemAt(i).widget(), widget_class)
             assert isinstance(widget, widget_class)
 
@@ -56,3 +56,10 @@ class TestGuiLayout:
         assert cwf.widget_left.label_performed_exercises.text() == "Performed Exercises: Double " \
                                                                    "click a line in the workouts" \
                                                                    " table!"
+
+    def test_right_widgets(self, central_widget_fixture):
+        cwf = central_widget_fixture
+        assert cwf.widget_right.group_box_database.title() == "Database Actions"
+        assert cwf.widget_right.group_box_workout.title() == "Workout Actions"
+        assert cwf.widget_right.label_available_exercises.text() == "Available Exercises"
+        assert cwf.widget_right.group_box_exercise.title() == "Exercise Actions"
