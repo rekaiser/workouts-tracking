@@ -42,13 +42,14 @@ class LeftWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.setLayout(QVBoxLayout(self))
-        self.label_workouts = QLabel("Some Text", self)
+        self.label_workouts = QLabel("Workouts", self)
         self.layout().addWidget(self.label_workouts)
         self.table_workouts = QTableWidget(self)
         self.layout().addWidget(self.table_workouts)
         self.frame_hline = HLineSunken(self)
         self.layout().addWidget(self.frame_hline)
-        self.label_performed_exercises = QLabel("Some different text!!!", self)
+        self.label_performed_exercises = QLabel("Performed Exercises: Double click a line in the "
+                                                "workouts table!", self)
         self.layout().addWidget(self.label_performed_exercises)
         self.table_performed_exercises = QTableWidget(self)
         self.layout().addWidget(self.table_performed_exercises)

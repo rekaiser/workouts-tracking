@@ -31,3 +31,10 @@ class TestGuiLayout:
         for i, (widget, widget_class) in enumerate(list_widgets_widget_classes):
             assert isinstance(left_layout.itemAt(i).widget(), widget_class)
             assert isinstance(widget, widget_class)
+
+    def test_left_widgets(self, central_widget_fixture):
+        cwf = central_widget_fixture
+        assert cwf.widget_left.label_workouts.text() == "Workouts"
+        assert cwf.widget_left.label_performed_exercises.text() == "Performed Exercises: Double " \
+                                                                   "click a line in the workouts " \
+                                                                   "table!"
