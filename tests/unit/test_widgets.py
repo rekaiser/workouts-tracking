@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (QSplitter, QLayout, QHBoxLayout, QWidget, QVBoxLayout, QTableWidget,
-                               QLabel, QGroupBox,
+                               QLabel, QGroupBox, QPushButton,
                                )
 
 from workouts_tracking.gui import HLineSunken, ComboboxCategory
@@ -38,12 +38,12 @@ class TestGuiLayout:
         assert isinstance(right_layout, QVBoxLayout)
 
         list_widgets_widget_classes_right = [
-            (cwf.widget_right.group_box_database, QGroupBox),
-            (cwf.widget_right.group_box_workout, QGroupBox),
+            (cwf.widget_right.groupbox_database, QGroupBox),
+            (cwf.widget_right.groupbox_workout, QGroupBox),
             (cwf.widget_right.label_available_exercises, QLabel),
             (cwf.widget_right.combobox_category, ComboboxCategory),
             (cwf.widget_right.table_available_exercises, QTableWidget),
-            (cwf.widget_right.group_box_exercise, QGroupBox),
+            (cwf.widget_right.groupbox_exercise, QGroupBox),
         ]
         for i, (widget, widget_class) in enumerate(list_widgets_widget_classes_right):
             assert isinstance(right_layout.itemAt(i).widget(), widget_class)
@@ -58,11 +58,26 @@ class TestGuiLayout:
 
     def test_right_widgets(self, central_widget_fixture):
         cwf = central_widget_fixture
-        assert cwf.widget_right.group_box_database.title() == "Database Actions"
-        assert cwf.widget_right.group_box_workout.title() == "Workout Actions"
+        assert cwf.widget_right.groupbox_database.title() == "Database Actions"
+        assert cwf.widget_right.groupbox_workout.title() == "Workout Actions"
         assert cwf.widget_right.label_available_exercises.text() == "Available Exercises"
-        assert cwf.widget_right.group_box_exercise.title() == "Exercise Actions"
+        assert cwf.widget_right.groupbox_exercise.title() == "Exercise Actions"
 
         combobox_item_texts = ["Strength Training", "Endurance Training", "Coordination Training"]
         for i, item_text in enumerate(combobox_item_texts):
             assert cwf.widget_right.combobox_category.itemText(i) == item_text
+
+    def test_groupbox_database(self, groupbox_database_fixture):
+        gdf = groupbox_database_fixture
+        assert isinstance(gdf.layout(), QHBoxLayout)
+
+        list_widgets_widget_classes_database = [
+            (gdf.button_new, QPushButton),
+            (gdf.button_load, QPushButton),
+            (gdf.button_close, QPushButton),
+        ]
+        for i, (button, widget_class) in enumerate(list_widgets_widget_classes_database):
+            assert isinstance(button, widget_class)
+
+    def test_database_buttons(self, groupbox_database_fixture):
+        gdf = groupbox_database_fixture

@@ -59,18 +59,18 @@ class RightWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.setLayout(QVBoxLayout(self))
-        self.group_box_database = QGroupBox("Database Actions", self)
-        self.layout().addWidget(self.group_box_database)
-        self.group_box_workout = QGroupBox("Workout Actions", self)
-        self.layout().addWidget(self.group_box_workout)
+        self.groupbox_database = QGroupBox("Database Actions", self)
+        self.layout().addWidget(self.groupbox_database)
+        self.groupbox_workout = QGroupBox("Workout Actions", self)
+        self.layout().addWidget(self.groupbox_workout)
         self.label_available_exercises = QLabel("Available Exercises", self)
         self.layout().addWidget(self.label_available_exercises)
         self.combobox_category = ComboboxCategory(self)
         self.layout().addWidget(self.combobox_category)
         self.table_available_exercises = QTableWidget(self)
         self.layout().addWidget(self.table_available_exercises)
-        self.group_box_exercise = QGroupBox("Exercise Actions", self)
-        self.layout().addWidget(self.group_box_exercise)
+        self.groupbox_exercise = QGroupBox("Exercise Actions", self)
+        self.layout().addWidget(self.groupbox_exercise)
 
 
 class HLineSunken(QFrame):

@@ -21,3 +21,8 @@ def main_window_fixture(q_app_fixture):
 @pytest.fixture(scope="session")
 def central_widget_fixture(main_window_fixture):
     yield main_window_fixture.centralWidget()
+
+
+@pytest.fixture()
+def groupbox_database_fixture(central_widget_fixture):
+    yield central_widget_fixture.widget_right.groupbox_database
