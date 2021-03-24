@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import (QSplitter, QLayout, QHBoxLayout, QWidget, QVBoxLayout, QTableWidget,
-                               QLabel, QGroupBox, QComboBox,
+                               QLabel, QGroupBox,
                                )
 
-from workouts_tracking.gui import HLineSunken
+from workouts_tracking.gui import HLineSunken, ComboboxCategory
 
 
 class TestGuiLayout:
@@ -41,7 +41,7 @@ class TestGuiLayout:
             (cwf.widget_right.group_box_database, QGroupBox),
             (cwf.widget_right.group_box_workout, QGroupBox),
             (cwf.widget_right.label_available_exercises, QLabel),
-            (cwf.widget_right.combobox_category, QComboBox),
+            (cwf.widget_right.combobox_category, ComboboxCategory),
             (cwf.widget_right.table_available_exercises, QTableWidget),
             (cwf.widget_right.group_box_exercise, QGroupBox),
         ]

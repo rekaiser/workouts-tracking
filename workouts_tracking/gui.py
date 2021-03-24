@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout, QWidget,
-                               QVBoxLayout, QTableWidget, QLabel, QFrame, QGroupBox,
+                               QVBoxLayout, QTableWidget, QLabel, QFrame, QGroupBox, QComboBox,
                                )
 from .constants import APPLICATION_NAME
 
@@ -65,6 +65,8 @@ class RightWidget(QWidget):
         self.layout().addWidget(self.group_box_workout)
         self.label_available_exercises = QLabel("Available Exercises", self)
         self.layout().addWidget(self.label_available_exercises)
+        self.combobox_category = ComboboxCategory(self)
+        self.layout().addWidget(self.combobox_category)
         self.table_available_exercises = QTableWidget(self)
         self.layout().addWidget(self.table_available_exercises)
         self.group_box_exercise = QGroupBox("Exercise Actions", self)
@@ -78,3 +80,10 @@ class HLineSunken(QFrame):
         self.setFrameShadow(QFrame.Sunken)
         self.setLineWidth(3)
         self.setMidLineWidth(1)
+
+
+class ComboboxCategory(QComboBox):
+    def __init__(self, parent):
+        super().__init__(parent)
+        workout_categories = ["Strength Training", "Endurance Training", "Coordination Training"]
+        self.addItems(workout_categories)
