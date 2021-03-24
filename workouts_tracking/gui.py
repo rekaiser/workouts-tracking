@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout, QWidget,
                                QVBoxLayout, QTableWidget, QLabel, QFrame, QGroupBox, QComboBox,
+                               QPushButton,
                                )
 from .constants import APPLICATION_NAME
 
@@ -59,7 +60,7 @@ class RightWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.setLayout(QVBoxLayout(self))
-        self.groupbox_database = QGroupBox("Database Actions", self)
+        self.groupbox_database = GroupBoxDatabase("Database Actions", self)
         self.layout().addWidget(self.groupbox_database)
         self.groupbox_workout = QGroupBox("Workout Actions", self)
         self.layout().addWidget(self.groupbox_workout)
@@ -87,3 +88,15 @@ class ComboboxCategory(QComboBox):
         super().__init__(parent)
         workout_categories = ["Strength Training", "Endurance Training", "Coordination Training"]
         self.addItems(workout_categories)
+
+
+class GroupBoxDatabase(QGroupBox):
+    def __init__(self, title, parent):
+        super().__init__(title, parent)
+        self.setLayout(QHBoxLayout(self))
+        self.button_new = QPushButton("some text for new", self)
+        self.layout().addWidget(self.button_new)
+        self.button_load = QPushButton("some text for load", self)
+        self.layout().addWidget(self.button_load)
+        self.button_close = QPushButton("some text for close", self)
+        self.layout().addWidget(self.button_close)

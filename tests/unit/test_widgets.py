@@ -2,7 +2,7 @@ from PySide6.QtWidgets import (QSplitter, QLayout, QHBoxLayout, QWidget, QVBoxLa
                                QLabel, QGroupBox, QPushButton,
                                )
 
-from workouts_tracking.gui import HLineSunken, ComboboxCategory
+from workouts_tracking.gui import HLineSunken, ComboboxCategory, GroupBoxDatabase
 
 
 class TestGuiLayout:
@@ -38,7 +38,7 @@ class TestGuiLayout:
         assert isinstance(right_layout, QVBoxLayout)
 
         list_widgets_widget_classes_right = [
-            (cwf.widget_right.groupbox_database, QGroupBox),
+            (cwf.widget_right.groupbox_database, GroupBoxDatabase),
             (cwf.widget_right.groupbox_workout, QGroupBox),
             (cwf.widget_right.label_available_exercises, QLabel),
             (cwf.widget_right.combobox_category, ComboboxCategory),
@@ -78,6 +78,7 @@ class TestGuiLayout:
         ]
         for i, (button, widget_class) in enumerate(list_widgets_widget_classes_database):
             assert isinstance(button, widget_class)
+            assert isinstance(gdf.layout().itemAt(i).widget(), widget_class)
 
     def test_database_buttons(self, groupbox_database_fixture):
         gdf = groupbox_database_fixture
