@@ -82,3 +82,6 @@ class TestGuiLayout:
 
     def test_database_buttons(self, groupbox_database_fixture):
         gdf = groupbox_database_fixture
+        list_button_texts = ["New Database", "Load Database", "Close Database"]
+        for i, button_text in enumerate(list_button_texts):
+            assert gdf.layout().itemAt(i).widget().text() == button_text

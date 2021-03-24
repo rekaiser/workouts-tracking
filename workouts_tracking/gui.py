@@ -94,9 +94,9 @@ class GroupBoxDatabase(QGroupBox):
     def __init__(self, title, parent):
         super().__init__(title, parent)
         self.setLayout(QHBoxLayout(self))
-        self.button_new = QPushButton("some text for new", self)
+        self.button_new = QPushButton("New Database", self)
         self.layout().addWidget(self.button_new)
-        self.button_load = QPushButton("some text for load", self)
+        self.button_load = QPushButton("Load Database", self)
         self.layout().addWidget(self.button_load)
-        self.button_close = QPushButton("some text for close", self)
+        self.button_close = QPushButton("Close Database", self)
         self.layout().addWidget(self.button_close)
