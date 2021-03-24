@@ -68,6 +68,8 @@ class RightWidget(QWidget):
         self.layout().addWidget(self.label_available_exercises)
         self.combobox_category = ComboboxCategory(self)
         self.layout().addWidget(self.combobox_category)
+        self.combobox_muscles = ComboboxMuscles(self)
+        self.layout().addWidget(self.combobox_muscles)
         self.table_available_exercises = QTableWidget(self)
         self.layout().addWidget(self.table_available_exercises)
         self.groupbox_exercise = QGroupBox("Exercise Actions", self)
@@ -86,7 +88,8 @@ class HLineSunken(QFrame):
 class ComboboxCategory(QComboBox):
     def __init__(self, parent):
         super().__init__(parent)
-        workout_categories = ["Strength Training", "Endurance Training", "Coordination Training"]
+        workout_categories = ["All Categories", "Strength Training", "Endurance Training",
+                              "Coordination Training"]
         self.addItems(workout_categories)
 
 
@@ -100,3 +103,12 @@ class GroupBoxDatabase(QGroupBox):
         self.layout().addWidget(self.button_load)
         self.button_close = QPushButton("Close Database", self)
         self.layout().addWidget(self.button_close)
+
+
+class ComboboxMuscles(QComboBox):
+    def __init__(self, parent):
+        super().__init__(parent)
+        muscle_groups = ["All muscles groups", "Chest", "Abdominal Muscles", "Neck", "Upper Back",
+                         "Upper Arms", "Shoulders", "Forearms", "Lower Back", "Gluteal Muscles",
+                         "Upper Legs", "Lower Legs"]
+        self.addItems(muscle_groups)

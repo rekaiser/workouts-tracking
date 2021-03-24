@@ -2,7 +2,8 @@ from PySide6.QtWidgets import (QSplitter, QLayout, QHBoxLayout, QWidget, QVBoxLa
                                QLabel, QGroupBox, QPushButton,
                                )
 
-from workouts_tracking.gui import HLineSunken, ComboboxCategory, GroupBoxDatabase
+from workouts_tracking.gui import (HLineSunken, ComboboxCategory, GroupBoxDatabase, ComboboxMuscles,
+                                   )
 
 
 class TestGuiLayout:
@@ -42,6 +43,7 @@ class TestGuiLayout:
             (cwf.widget_right.groupbox_workout, QGroupBox),
             (cwf.widget_right.label_available_exercises, QLabel),
             (cwf.widget_right.combobox_category, ComboboxCategory),
+            (cwf.widget_right.combobox_muscles, ComboboxMuscles),
             (cwf.widget_right.table_available_exercises, QTableWidget),
             (cwf.widget_right.groupbox_exercise, QGroupBox),
         ]
@@ -63,9 +65,16 @@ class TestGuiLayout:
         assert cwf.widget_right.label_available_exercises.text() == "Available Exercises"
         assert cwf.widget_right.groupbox_exercise.title() == "Exercise Actions"
 
-        combobox_item_texts = ["Strength Training", "Endurance Training", "Coordination Training"]
-        for i, item_text in enumerate(combobox_item_texts):
+        combobox_category_item_texts = ["All Categories", "Strength Training", "Endurance Training",
+                                        "Coordination Training"]
+        for i, item_text in enumerate(combobox_category_item_texts):
             assert cwf.widget_right.combobox_category.itemText(i) == item_text
+
+        combobox_muscles_item_texts = ["All muscles groups", "Chest", "Abdominal Muscles", "Neck",
+                                       "Upper Back", "Upper Arms", "Shoulders", "Forearms",
+                                       "Lower Back", "Gluteal Muscles", "Upper Legs", "Lower Legs"]
+        for i, item_text in enumerate(combobox_muscles_item_texts):
+            assert cwf.widget_right.combobox_muscles.itemText(i) == item_text
 
     def test_groupbox_database(self, groupbox_database_fixture):
         gdf = groupbox_database_fixture
