@@ -117,3 +117,22 @@ class TestGuiLayout:
         assert not gwf.button_start.isEnabled() and gwf.button_finish.isEnabled()
         gwf.button_finish.click()
         assert gwf.button_start.isEnabled() and not gwf.button_finish.isEnabled()
+
+    def test_groupbox_exercise(self, groupbox_exercise_fixture):
+        gef = groupbox_exercise_fixture
+        assert isinstance(gef.layout(), QHBoxLayout)
+
+        list_widgets_widget_classes_exercise = [
+            (gef.button_perform, QPushButton),
+            (gef.button_new, QPushButton),
+            (gef.button_edit, QPushButton),
+        ]
+        for i, (widget, widget_class) in enumerate(list_widgets_widget_classes_exercise):
+            assert isinstance(widget, widget_class)
+            assert isinstance(gef.layout().itemAt(i).widget(), widget_class)
+
+    def test_exercise_buttons(self, groupbox_exercise_fixture):
+        gef = groupbox_exercise_fixture
+        list_button_texts = ["Perform Exercise", "New Exercise", "Edit Exercise"]
+        for i, button_text in enumerate(list_button_texts):
+            assert gef.layout().itemAt(i).widget().text() == button_text

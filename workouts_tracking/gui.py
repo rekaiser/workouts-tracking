@@ -72,7 +72,7 @@ class RightWidget(QWidget):
         self.layout().addWidget(self.combobox_muscles)
         self.table_available_exercises = QTableWidget(self)
         self.layout().addWidget(self.table_available_exercises)
-        self.groupbox_exercise = QGroupBox("Exercise Actions", self)
+        self.groupbox_exercise = GroupBoxExercise("Exercise Actions", self)
         self.layout().addWidget(self.groupbox_exercise)
 
 
@@ -109,10 +109,10 @@ class GroupBoxWorkout(QGroupBox):
     def __init__(self, title, parent):
         super().__init__(title, parent)
         self.setLayout(QHBoxLayout(self))
-        self.button_start = QPushButton("Start Workout")
+        self.button_start = QPushButton("Start Workout", self)
         self.button_start.clicked.connect(self.switch_button_ability)
         self.layout().addWidget(self.button_start)
-        self.button_finish = QPushButton("Finish Workout")
+        self.button_finish = QPushButton("Finish Workout", self)
         self.button_finish.setDisabled(True)
         self.button_finish.clicked.connect(self.switch_button_ability)
         self.layout().addWidget(self.button_finish)
@@ -133,3 +133,15 @@ class ComboboxMuscles(QComboBox):
                          "Upper Arms", "Shoulders", "Forearms", "Lower Back", "Gluteal Muscles",
                          "Upper Legs", "Lower Legs"]
         self.addItems(muscle_groups)
+
+
+class GroupBoxExercise(QGroupBox):
+    def __init__(self, title, parent):
+        super().__init__(title, parent)
+        self.setLayout(QHBoxLayout(self))
+        self.button_perform = QPushButton("Perform Exercise", self)
+        self.layout().addWidget(self.button_perform)
+        self.button_new = QPushButton("New Exercise", self)
+        self.layout().addWidget(self.button_new)
+        self.button_edit = QPushButton("Edit Exercise", self)
+        self.layout().addWidget(self.button_edit)
