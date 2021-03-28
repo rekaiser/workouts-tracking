@@ -1,8 +1,10 @@
 from PySide6.QtWidgets import (QSplitter, QLayout, QHBoxLayout, QWidget, QVBoxLayout, QTableWidget,
-                               QLabel, QGroupBox, QPushButton,
+                               QLabel, QPushButton, QGridLayout,
                                )
 
 from workouts_tracking.gui import (HLineSunken, ComboboxCategory, GroupBoxDatabase, ComboboxMuscles,
+                                   GroupBoxWorkout, GroupBoxExercise, GroupBoxAvailableExercises,
+                                   ComboboxDifficulty,
                                    )
 
 
@@ -40,12 +42,9 @@ class TestGuiLayout:
 
         list_widgets_widget_classes_right = [
             (cwf.widget_right.groupbox_database, GroupBoxDatabase),
-            (cwf.widget_right.groupbox_workout, QGroupBox),
-            (cwf.widget_right.label_available_exercises, QLabel),
-            (cwf.widget_right.combobox_category, ComboboxCategory),
-            (cwf.widget_right.combobox_muscles, ComboboxMuscles),
-            (cwf.widget_right.table_available_exercises, QTableWidget),
-            (cwf.widget_right.groupbox_exercise, QGroupBox),
+            (cwf.widget_right.groupbox_workout, GroupBoxWorkout),
+            (cwf.widget_right.groupbox_available_exercises, GroupBoxAvailableExercises),
+            (cwf.widget_right.groupbox_exercise, GroupBoxExercise),
         ]
         for i, (widget, widget_class) in enumerate(list_widgets_widget_classes_right):
             assert isinstance(right_layout.itemAt(i).widget(), widget_class)
@@ -62,19 +61,8 @@ class TestGuiLayout:
         cwf = central_widget_fixture
         assert cwf.widget_right.groupbox_database.title() == "Database Actions"
         assert cwf.widget_right.groupbox_workout.title() == "Workout Actions"
-        assert cwf.widget_right.label_available_exercises.text() == "Available Exercises"
+        assert cwf.widget_right.groupbox_available_exercises.title() == "Available Exercises"
         assert cwf.widget_right.groupbox_exercise.title() == "Exercise Actions"
-
-        combobox_category_item_texts = ["All Categories", "Strength Training", "Endurance Training",
-                                        "Coordination Training"]
-        for i, item_text in enumerate(combobox_category_item_texts):
-            assert cwf.widget_right.combobox_category.itemText(i) == item_text
-
-        combobox_muscles_item_texts = ["All muscles groups", "Chest", "Abdominal Muscles", "Neck",
-                                       "Upper Back", "Upper Arms", "Shoulders", "Forearms",
-                                       "Lower Back", "Gluteal Muscles", "Upper Legs", "Lower Legs"]
-        for i, item_text in enumerate(combobox_muscles_item_texts):
-            assert cwf.widget_right.combobox_muscles.itemText(i) == item_text
 
     def test_groupbox_database(self, groupbox_database_fixture):
         gdf = groupbox_database_fixture
@@ -136,3 +124,35 @@ class TestGuiLayout:
         list_button_texts = ["Perform Exercise", "New Exercise", "Edit Exercise"]
         for i, button_text in enumerate(list_button_texts):
             assert gef.layout().itemAt(i).widget().text() == button_text
+
+    def test_groupbox_available_exercises(self, groupbox_available_exercises_fixture):
+        gaf = groupbox_available_exercises_fixture
+        assert isinstance(gaf.layout(), QGridLayout)
+
+        list_widgets_widget_classes_available_exercises = [
+            (gaf.combobox_category, ComboboxCategory),
+            (gaf.combobox_muscles, ComboboxMuscles),
+            (gaf.combobox_difficulty, ComboboxDifficulty),
+            (gaf.table_available_exercises, QTableWidget),
+        ]
+        for i, (widget, widget_class) in enumerate(list_widgets_widget_classes_available_exercises):
+            assert isinstance(widget, widget_class)
+            assert isinstance(gaf.layout().itemAt(i).widget(), widget_class)
+
+    def test_comboboxes_exercises(self, groupbox_available_exercises_fixture):
+        gaf = groupbox_available_exercises_fixture
+        combobox_category_item_texts = ["All Categories", "Strength Training", "Endurance Training",
+                                        "Coordination Training"]
+        for i, item_text in enumerate(combobox_category_item_texts):
+            assert gaf.combobox_category.itemText(i) == item_text
+
+        combobox_muscles_item_texts = ["All muscles groups", "Chest", "Abdominal Muscles", "Neck",
+                                       "Upper Back", "Upper Arms", "Shoulders", "Forearms",
+                                       "Lower Back", "Gluteal Muscles", "Upper Legs", "Lower Legs"]
+        for i, item_text in enumerate(combobox_muscles_item_texts):
+            assert gaf.combobox_muscles.itemText(i) == item_text
+
+        combobox_difficulty_texts = ["All Difficulties", "Very Hard", "Hard", "Medium", "Easy",
+                                     "Very Easy"]
+        for i, item_text in enumerate(combobox_difficulty_texts):
+            assert gaf.combobox_difficulty.itemText(i) == item_text

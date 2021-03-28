@@ -36,3 +36,8 @@ def groupbox_workout_fixture(central_widget_fixture):
 @pytest.fixture()
 def groupbox_exercise_fixture(central_widget_fixture):
     yield central_widget_fixture.widget_right.groupbox_exercise
+
+
+@pytest.fixture()
+def groupbox_available_exercises_fixture(central_widget_fixture):
+    yield central_widget_fixture.widget_right.groupbox_available_exercises

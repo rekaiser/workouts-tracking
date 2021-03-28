@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout, QWidget,
                                QVBoxLayout, QTableWidget, QLabel, QFrame, QGroupBox, QComboBox,
-                               QPushButton,
+                               QPushButton, QGridLayout,
                                )
 from .constants import APPLICATION_NAME
 
@@ -64,14 +64,8 @@ class RightWidget(QWidget):
         self.layout().addWidget(self.groupbox_database)
         self.groupbox_workout = GroupBoxWorkout("Workout Actions", self)
         self.layout().addWidget(self.groupbox_workout)
-        self.label_available_exercises = QLabel("Available Exercises", self)
-        self.layout().addWidget(self.label_available_exercises)
-        self.combobox_category = ComboboxCategory(self)
-        self.layout().addWidget(self.combobox_category)
-        self.combobox_muscles = ComboboxMuscles(self)
-        self.layout().addWidget(self.combobox_muscles)
-        self.table_available_exercises = QTableWidget(self)
-        self.layout().addWidget(self.table_available_exercises)
+        self.groupbox_available_exercises = GroupBoxAvailableExercises("Available Exercises", self)
+        self.layout().addWidget(self.groupbox_available_exercises)
         self.groupbox_exercise = GroupBoxExercise("Exercise Actions", self)
         self.layout().addWidget(self.groupbox_exercise)
 
@@ -83,14 +77,6 @@ class HLineSunken(QFrame):
         self.setFrameShadow(QFrame.Sunken)
         self.setLineWidth(3)
         self.setMidLineWidth(1)
-
-
-class ComboboxCategory(QComboBox):
-    def __init__(self, parent):
-        super().__init__(parent)
-        workout_categories = ["All Categories", "Strength Training", "Endurance Training",
-                              "Coordination Training"]
-        self.addItems(workout_categories)
 
 
 class GroupBoxDatabase(QGroupBox):
@@ -126,15 +112,6 @@ class GroupBoxWorkout(QGroupBox):
             self.button_finish.setDisabled(True)
 
 
-class ComboboxMuscles(QComboBox):
-    def __init__(self, parent):
-        super().__init__(parent)
-        muscle_groups = ["All muscles groups", "Chest", "Abdominal Muscles", "Neck", "Upper Back",
-                         "Upper Arms", "Shoulders", "Forearms", "Lower Back", "Gluteal Muscles",
-                         "Upper Legs", "Lower Legs"]
-        self.addItems(muscle_groups)
-
-
 class GroupBoxExercise(QGroupBox):
     def __init__(self, title, parent):
         super().__init__(title, parent)
@@ -145,3 +122,45 @@ class GroupBoxExercise(QGroupBox):
         self.layout().addWidget(self.button_new)
         self.button_edit = QPushButton("Edit Exercise", self)
         self.layout().addWidget(self.button_edit)
+
+
+class GroupBoxAvailableExercises(QGroupBox):
+    def __init__(self, title, parent):
+        super().__init__(title, parent)
+        self.__layout = QGridLayout(self)
+        self.setLayout(self.__layout)
+        self.combobox_category = ComboboxCategory(self)
+        self.__layout.addWidget(self.combobox_category, 0, 0)
+        self.combobox_muscles = ComboboxMuscles(self)
+        self.__layout.addWidget(self.combobox_muscles, 0, 1)
+        self.combobox_difficulty = ComboboxDifficulty(self)
+        self.__layout.addWidget(self.combobox_difficulty, 0, 2)
+        self.table_available_exercises = QTableWidget(self)
+        self.__layout.addWidget(self.table_available_exercises, 1, 0, 1, 3)
+
+    def layout(self):
+        return self.__layout
+
+
+class ComboboxCategory(QComboBox):
+    def __init__(self, parent):
+        super().__init__(parent)
+        workout_categories = ["All Categories", "Strength Training", "Endurance Training",
+                              "Coordination Training"]
+        self.addItems(workout_categories)
+
+
+class ComboboxMuscles(QComboBox):
+    def __init__(self, parent):
+        super().__init__(parent)
+        muscle_groups = ["All muscles groups", "Chest", "Abdominal Muscles", "Neck", "Upper Back",
+                         "Upper Arms", "Shoulders", "Forearms", "Lower Back", "Gluteal Muscles",
+                         "Upper Legs", "Lower Legs"]
+        self.addItems(muscle_groups)
+
+
+class ComboboxDifficulty(QComboBox):
+    def __init__(self, parent):
+        super().__init__(parent)
+        difficulties = ["All Difficulties", "Very Hard", "Hard", "Medium", "Easy", "Very Easy"]
+        self.addItems(difficulties)
