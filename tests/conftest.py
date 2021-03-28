@@ -26,3 +26,8 @@ def central_widget_fixture(main_window_fixture):
 @pytest.fixture()
 def groupbox_database_fixture(central_widget_fixture):
     yield central_widget_fixture.widget_right.groupbox_database
+
+
+@pytest.fixture()
+def groupbox_workout_fixture(central_widget_fixture):
+    yield central_widget_fixture.widget_right.groupbox_workout

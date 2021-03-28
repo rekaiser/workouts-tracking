@@ -62,7 +62,7 @@ class RightWidget(QWidget):
         self.setLayout(QVBoxLayout(self))
         self.groupbox_database = GroupBoxDatabase("Database Actions", self)
         self.layout().addWidget(self.groupbox_database)
-        self.groupbox_workout = QGroupBox("Workout Actions", self)
+        self.groupbox_workout = GroupBoxWorkout("Workout Actions", self)
         self.layout().addWidget(self.groupbox_workout)
         self.label_available_exercises = QLabel("Available Exercises", self)
         self.layout().addWidget(self.label_available_exercises)
@@ -103,6 +103,27 @@ class GroupBoxDatabase(QGroupBox):
         self.layout().addWidget(self.button_load)
         self.button_close = QPushButton("Close Database", self)
         self.layout().addWidget(self.button_close)
+
+
+class GroupBoxWorkout(QGroupBox):
+    def __init__(self, title, parent):
+        super().__init__(title, parent)
+        self.setLayout(QHBoxLayout(self))
+        self.button_start = QPushButton("Start Workout")
+        self.button_start.clicked.connect(self.switch_button_ability)
+        self.layout().addWidget(self.button_start)
+        self.button_finish = QPushButton("Finish Workout")
+        self.button_finish.setDisabled(True)
+        self.button_finish.clicked.connect(self.switch_button_ability)
+        self.layout().addWidget(self.button_finish)
+
+    def switch_button_ability(self):
+        if self.button_start.isEnabled() and not self.button_finish.isEnabled():
+            self.button_start.setDisabled(True)
+            self.button_finish.setEnabled(True)
+        elif not self.button_start.isEnabled() and self.button_finish.isEnabled():
+            self.button_start.setEnabled(True)
+            self.button_finish.setDisabled(True)
 
 
 class ComboboxMuscles(QComboBox):

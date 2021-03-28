@@ -85,8 +85,8 @@ class TestGuiLayout:
             (gdf.button_load, QPushButton),
             (gdf.button_close, QPushButton),
         ]
-        for i, (button, widget_class) in enumerate(list_widgets_widget_classes_database):
-            assert isinstance(button, widget_class)
+        for i, (widget, widget_class) in enumerate(list_widgets_widget_classes_database):
+            assert isinstance(widget, widget_class)
             assert isinstance(gdf.layout().itemAt(i).widget(), widget_class)
 
     def test_database_buttons(self, groupbox_database_fixture):
@@ -94,3 +94,26 @@ class TestGuiLayout:
         list_button_texts = ["New Database", "Load Database", "Close Database"]
         for i, button_text in enumerate(list_button_texts):
             assert gdf.layout().itemAt(i).widget().text() == button_text
+
+    def test_groupbox_workout(self, groupbox_workout_fixture):
+        gwf = groupbox_workout_fixture
+        assert isinstance(gwf.layout(), QHBoxLayout)
+
+        list_widgets_widget_classes_workout = [
+            (gwf.button_start, QPushButton),
+            (gwf.button_finish, QPushButton),
+        ]
+        for i, (widget, widget_class) in enumerate(list_widgets_widget_classes_workout):
+            assert isinstance(widget, widget_class)
+            assert isinstance(gwf.layout().itemAt(i).widget(), widget_class)
+
+    def test_workout_buttons(self, groupbox_workout_fixture):
+        gwf = groupbox_workout_fixture
+        list_button_texts = ["Start Workout", "Finish Workout"]
+        for i, button_text in enumerate(list_button_texts):
+            assert gwf.layout().itemAt(i).widget().text() == button_text
+        assert gwf.button_start.isEnabled() and not gwf.button_finish.isEnabled()
+        gwf.button_start.click()
+        assert not gwf.button_start.isEnabled() and gwf.button_finish.isEnabled()
+        gwf.button_finish.click()
+        assert gwf.button_start.isEnabled() and not gwf.button_finish.isEnabled()
