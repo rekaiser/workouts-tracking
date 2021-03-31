@@ -5,13 +5,6 @@ from workouts_tracking.exercise import Exercise
 
 
 @pytest.fixture()
-def empty_database_fixture(tmp_path):
-    database_filename = tmp_path / "test_database.db"
-    database = Database(database_filename)
-    yield database
-
-
-@pytest.fixture()
 def exercise_fixture():
     exercise = Exercise("some name for an exercise")
     yield exercise

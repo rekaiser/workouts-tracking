@@ -3,6 +3,7 @@ import sys
 import pytest
 
 from workouts_tracking.gui import create_app, create_and_show_main_window
+from workouts_tracking.database import Database
 
 
 @pytest.fixture(scope="session")
@@ -41,3 +42,10 @@ def groupbox_exercise_fixture(central_widget_fixture):
 @pytest.fixture()
 def groupbox_available_exercises_fixture(central_widget_fixture):
     yield central_widget_fixture.widget_right.groupbox_available_exercises
+
+
+@pytest.fixture()
+def empty_database_fixture(tmp_path):
+    database_filename = tmp_path / "test_database.db"
+    database = Database(database_filename)
+    yield database
