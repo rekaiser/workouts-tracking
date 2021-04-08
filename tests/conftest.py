@@ -4,6 +4,7 @@ import pytest
 
 from workouts_tracking.gui import create_app, create_and_show_main_window
 from workouts_tracking.database import Database
+from workouts_tracking.exercise import Exercise
 
 
 @pytest.fixture(scope="session")
@@ -50,3 +51,9 @@ def empty_database_fixture(tmp_path):
     database = Database(database_filename)
     yield database
     database.close_connection()
+
+
+@pytest.fixture()
+def exercise_fixture():
+    exercise = Exercise("Test Exercise")
+    yield exercise

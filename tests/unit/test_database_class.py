@@ -18,9 +18,11 @@ class TestDatabaseMethods:
 
     def test_initialize_tables(self, empty_database_fixture):
         edf = empty_database_fixture
-        edf.initialize_tables()
         edf.cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
         tables = edf.cursor.fetchall()
         for table in [("exercises",), ("workouts",)]:
             assert table in tables
 
+    def test_new_exercise(self, empty_database_fixture, exercise_fixture):
+        edf = empty_database_fixture
+        edf.new_exercise(exercise_fixture)
