@@ -227,7 +227,9 @@ class WindowNewExercise(QWidget):
             line_edit_measure_name.hide()
 
         self.button_discard = QPushButton("Discard Exercise", self)
+        self.button_discard.clicked.connect(self.button_discard_action)
         self.button_add = QPushButton("Add Exercise", self)
+        self.button_add.clicked.connect(self.button_add_action)
         self.layout().addRow(self.button_discard, self.button_add)
 
     def change_visibility_measure_widgets(self):
@@ -250,3 +252,9 @@ class WindowNewExercise(QWidget):
         for line_edit in self.line_edits_measure_name:
             line_edit.setText("")
         return super().closeEvent(event)
+
+    def button_discard_action(self):
+        self.close()
+
+    def button_add_action(self):
+        self.close()

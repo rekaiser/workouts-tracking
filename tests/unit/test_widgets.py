@@ -235,3 +235,19 @@ class TestWindowNewExercise:
             assert not wne.comboboxes_type[i].isVisible()
             assert not wne.labels_measure_name[i].isVisible()
             assert not wne.line_edits_measure_name[i].isVisible()
+
+    def test_discard_button(self, main_window_fixture):
+        mwf = main_window_fixture
+        mwf.show_window_new_exercise()
+        wne = mwf.window_new_exercise
+        assert wne.isVisible()
+        wne.button_discard.click()
+        assert not wne.isVisible()
+
+    def test_add_button(self, main_window_fixture):
+        mwf = main_window_fixture
+        mwf.show_window_new_exercise()
+        wne = mwf.window_new_exercise
+        assert wne.isVisible()
+        wne.button_add.click()
+        assert not wne.isVisible()
