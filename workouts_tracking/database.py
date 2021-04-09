@@ -10,6 +10,7 @@ class DatabaseError(Exception):
 
 class Database:
     """This class handles the methods connected to the sqlite3 database."""
+
     def __init__(self, filename):
         self.filename = filename
         self.connection = sql.connect(self.filename)
@@ -24,16 +25,18 @@ class Database:
         self.open_connection = False
 
     def initialize_tables(self):
-        with self.connection as con:
-            con.execute("CREATE TABLE exercises "
-                        "(name text,"
-                        "category text,"
-                        "muscles_groups text,"
-                        "difficulty int);")
-            con.execute("CREATE TABLE workouts "
-                        "(name text,"
-                        "date int)")
+        with self.connection:
+            self.cursor.execute("CREATE TABLE exercises "
+                                "(name text,"
+                                "category text,"
+                                "muscles_groups text,"
+                                "difficulty int);")
+            self.cursor.execute("CREATE TABLE workouts "
+                                "(name text,"
+                                "date int);")
 
     def new_exercise(self, exercise: Exercise):
-        with self.connection as con:
-            con.execute("INSERT INTO exercises VALUES (?, ?, ?, ?)", exercise.record())
+        with self.connection:
+            self.cursor.execute("INSERT INTO exercises VALUES (?, ?, ?, ?);", exercise.record())
+            last_row_id = self.cursor.lastrowid
+            self.cursor.execute(f"CREATE TABLE exercise_{last_row_id} (date int);")
