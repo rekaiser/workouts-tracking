@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout
                                QPushButton, QGridLayout, QFormLayout, QLineEdit, QSpinBox,
                                )
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QCloseEvent
 
 from .constants import APPLICATION_NAME
 
@@ -242,3 +243,10 @@ class WindowNewExercise(QWidget):
                 self.comboboxes_type[i].hide()
                 self.labels_measure_name[i].hide()
                 self.line_edits_measure_name[i].hide()
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        self.line_edit_name.setText("")
+        self.spin_box_measures.setValue(0)
+        for line_edit in self.line_edits_measure_name:
+            line_edit.setText("")
+        return super().closeEvent(event)

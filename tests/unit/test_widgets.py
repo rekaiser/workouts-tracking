@@ -223,13 +223,13 @@ class TestWindowNewExercise:
     def test_close_window(self, main_window_fixture):
         wne = main_window_fixture.window_new_exercise
         wne.spin_box_measures.setValue(5)
-        wne.label_name.setText("Some exercise")
+        wne.line_edit_name.setText("Some exercise")
         wne.line_edits_measure_name[3].setText("Sets")
         wne.line_edits_measure_name[4].setText("SIOMBD")
         wne.close()
-        assert wne.label_name.text() == ""
-        assert wne.line_edits_measure_name[3] == ""
-        assert wne.line_edits_measure_name[4] == ""
+        assert wne.line_edit_name.text() == ""
+        assert wne.line_edits_measure_name[3].text() == ""
+        assert wne.line_edits_measure_name[4].text() == ""
         for i in range(5):
             assert not wne.labels_measure_type[i].isVisible()
             assert not wne.comboboxes_type[i].isVisible()
