@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QSplitter, QLayout, QHBoxLayout, QWidget, QVBoxLa
 
 from workouts_tracking.gui import (HLineSunken, ComboboxCategory, GroupBoxDatabase, ComboboxMuscles,
                                    GroupBoxWorkout, GroupBoxExercise, GroupBoxAvailableExercises,
-                                   ComboboxDifficulty,
+                                   ComboboxDifficulty, WindowNewExercise,
                                    )
 
 
@@ -156,3 +156,9 @@ class TestGuiLayout:
                                      "Very Easy"]
         for i, item_text in enumerate(combobox_difficulty_texts):
             assert gaf.combobox_difficulty.itemText(i) == item_text
+
+
+class TestWindowNewExercise:
+    def test_existence(self, main_window_fixture):
+        mwf = main_window_fixture
+        assert isinstance(mwf.window_new_exercise, WindowNewExercise)

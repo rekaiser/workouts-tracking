@@ -22,14 +22,30 @@ def create_and_show_main_window():
     return main_window
 
 
+class BasicWidget(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+    def super_parent(self):
+        try:
+            return self.parent().super_parent()
+        except AttributeError:
+            return self.parent()
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.widget_main = MainWidget(self)
         self.setCentralWidget(self.widget_main)
 
+        self.window_new_exercise = WindowNewExercise()
 
-class MainWidget(QSplitter):
+    def show_window_new_exercise(self):
+        self.window_new_exercise.show()
+
+
+class MainWidget(QSplitter, BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.setLayout(QHBoxLayout(self))
@@ -39,7 +55,7 @@ class MainWidget(QSplitter):
         self.layout().addWidget(self.widget_right)
 
 
-class LeftWidget(QWidget):
+class LeftWidget(BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.setLayout(QVBoxLayout(self))
@@ -56,7 +72,7 @@ class LeftWidget(QWidget):
         self.layout().addWidget(self.table_performed_exercises)
 
 
-class RightWidget(QWidget):
+class RightWidget(BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.setLayout(QVBoxLayout(self))
@@ -70,7 +86,7 @@ class RightWidget(QWidget):
         self.layout().addWidget(self.groupbox_exercise)
 
 
-class HLineSunken(QFrame):
+class HLineSunken(QFrame, BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.setFrameStyle(QFrame.HLine)
@@ -79,7 +95,7 @@ class HLineSunken(QFrame):
         self.setMidLineWidth(1)
 
 
-class GroupBoxDatabase(QGroupBox):
+class GroupBoxDatabase(QGroupBox, BasicWidget):
     def __init__(self, title, parent):
         super().__init__(title, parent)
         self.setLayout(QHBoxLayout(self))
@@ -91,7 +107,7 @@ class GroupBoxDatabase(QGroupBox):
         self.layout().addWidget(self.button_close)
 
 
-class GroupBoxWorkout(QGroupBox):
+class GroupBoxWorkout(QGroupBox, BasicWidget):
     def __init__(self, title, parent):
         super().__init__(title, parent)
         self.setLayout(QHBoxLayout(self))
@@ -112,19 +128,20 @@ class GroupBoxWorkout(QGroupBox):
             self.button_finish.setDisabled(True)
 
 
-class GroupBoxExercise(QGroupBox):
+class GroupBoxExercise(QGroupBox, BasicWidget):
     def __init__(self, title, parent):
         super().__init__(title, parent)
         self.setLayout(QHBoxLayout(self))
         self.button_perform = QPushButton("Perform Exercise", self)
         self.layout().addWidget(self.button_perform)
         self.button_new = QPushButton("New Exercise", self)
+        self.button_new.clicked.connect(self.super_parent().show_window_new_exercise)
         self.layout().addWidget(self.button_new)
         self.button_edit = QPushButton("Edit Exercise", self)
         self.layout().addWidget(self.button_edit)
 
 
-class GroupBoxAvailableExercises(QGroupBox):
+class GroupBoxAvailableExercises(QGroupBox, BasicWidget):
     def __init__(self, title, parent):
         super().__init__(title, parent)
         self.__layout = QGridLayout(self)
@@ -142,7 +159,7 @@ class GroupBoxAvailableExercises(QGroupBox):
         return self.__layout
 
 
-class ComboboxCategory(QComboBox):
+class ComboboxCategory(QComboBox, BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
         workout_categories = ["All Categories", "Strength Training", "Endurance Training",
@@ -150,7 +167,7 @@ class ComboboxCategory(QComboBox):
         self.addItems(workout_categories)
 
 
-class ComboboxMuscles(QComboBox):
+class ComboboxMuscles(QComboBox, BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
         muscle_groups = ["All muscles groups", "Chest", "Abdominal Muscles", "Neck", "Upper Back",
@@ -159,8 +176,13 @@ class ComboboxMuscles(QComboBox):
         self.addItems(muscle_groups)
 
 
-class ComboboxDifficulty(QComboBox):
+class ComboboxDifficulty(QComboBox, BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
         difficulties = ["All Difficulties", "Very Hard", "Hard", "Medium", "Easy", "Very Easy"]
         self.addItems(difficulties)
+
+
+class WindowNewExercise(QWidget):
+    def __init__(self):
+        super().__init__()

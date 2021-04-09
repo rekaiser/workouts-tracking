@@ -3,4 +3,4 @@ class TestEmptyDatabase:
         mwf = main_window_fixture
         gef = groupbox_exercise_fixture
         gef.button_new.click()
-        mwf.window_new_exercise.isVisible()
+        assert mwf.window_new_exercise.isVisible()
