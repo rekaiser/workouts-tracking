@@ -27,16 +27,13 @@ class Database:
     def initialize_tables(self):
         with self.connection:
             self.cursor.execute("CREATE TABLE exercises "
-                                "(name text,"
-                                "category text,"
-                                "muscles_groups text,"
-                                "difficulty int);")
+                                "(name text);")
             self.cursor.execute("CREATE TABLE workouts "
                                 "(name text,"
                                 "date int);")
 
     def new_exercise(self, exercise: Exercise):
         with self.connection:
-            self.cursor.execute("INSERT INTO exercises VALUES (?, ?, ?, ?);", exercise.record())
+            self.cursor.execute("INSERT INTO exercises VALUES (?);", exercise.record())
             last_row_id = self.cursor.lastrowid
             self.cursor.execute(f"CREATE TABLE exercise_{last_row_id} (date int);")

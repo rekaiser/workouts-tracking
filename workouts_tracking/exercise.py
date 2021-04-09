@@ -3,4 +3,4 @@ class Exercise:
         self.name = name
 
     def record(self):
-        return self.name, "category", "muscles", 1
+        return self.name,
