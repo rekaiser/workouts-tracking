@@ -1,9 +1,11 @@
+import os
+
 from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout, QWidget,
                                QVBoxLayout, QTableWidget, QLabel, QFrame, QGroupBox, QComboBox,
                                QPushButton, QGridLayout, QFormLayout, QLineEdit, QSpinBox,
                                )
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QCloseEvent
+from PySide6.QtGui import QCloseEvent, QIcon
 
 from .constants import APPLICATION_NAME
 
@@ -39,8 +41,12 @@ class BasicWidget(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.installation_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.widget_main = MainWidget(self)
         self.setCentralWidget(self.widget_main)
+        self.logo = QIcon(self.installation_path + "/graphics/WT-Logo.svg")
+        self.setWindowIcon(self.logo)
+        self.setWindowTitle(APPLICATION_NAME)
 
         self.window_new_exercise = WindowNewExercise(self)
 

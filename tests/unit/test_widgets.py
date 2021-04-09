@@ -3,12 +3,22 @@ from PySide6.QtWidgets import (QSplitter, QLayout, QHBoxLayout, QWidget, QVBoxLa
                                QLabel, QPushButton, QGridLayout, QFormLayout, QLineEdit, QSpinBox,
                                QComboBox,
                                )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize
+from PySide6.QtGui import QIcon
 
 from workouts_tracking.gui import (HLineSunken, ComboboxCategory, GroupBoxDatabase, ComboboxMuscles,
                                    GroupBoxWorkout, GroupBoxExercise, GroupBoxAvailableExercises,
                                    ComboboxDifficulty, WindowNewExercise,
                                    )
+
+
+class TestMainProperties:
+    def test_main_window_title(self, main_window_fixture):
+        assert main_window_fixture.windowTitle() == "Workouts Tracking"
+
+    def test_logo(self, main_window_fixture):
+        assert isinstance(main_window_fixture.logo, QIcon)
+        assert not main_window_fixture.logo.pixmap(QSize(32, 32)).isNull()
 
 
 class TestGuiLayout:
