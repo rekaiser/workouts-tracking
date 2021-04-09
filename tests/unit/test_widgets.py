@@ -1,6 +1,9 @@
+import pytest
 from PySide6.QtWidgets import (QSplitter, QLayout, QHBoxLayout, QWidget, QVBoxLayout, QTableWidget,
-                               QLabel, QPushButton, QGridLayout,
+                               QLabel, QPushButton, QGridLayout, QFormLayout, QLineEdit, QSpinBox,
+                               QComboBox,
                                )
+from PySide6.QtCore import Qt
 
 from workouts_tracking.gui import (HLineSunken, ComboboxCategory, GroupBoxDatabase, ComboboxMuscles,
                                    GroupBoxWorkout, GroupBoxExercise, GroupBoxAvailableExercises,
@@ -160,5 +163,59 @@ class TestGuiLayout:
 
 class TestWindowNewExercise:
     def test_existence(self, main_window_fixture):
-        mwf = main_window_fixture
-        assert isinstance(mwf.window_new_exercise, WindowNewExercise)
+        wne = main_window_fixture.window_new_exercise
+        assert isinstance(wne, WindowNewExercise)
+        assert wne.windowTitle() == "Add New Exercise"
+        assert wne.isModal()
+        assert bool(wne.windowFlags() & Qt.Window)
+        assert bool(wne.windowFlags() & Qt.WindowStaysOnTopHint)
+
+    def test_layout(self, main_window_fixture):
+        wne = main_window_fixture.window_new_exercise
+        assert isinstance(wne.layout(), QFormLayout)
+        list_widgets_widget_classes = [
+            (wne.label_name, QLabel),
+            (wne.line_edit_name, QLineEdit),
+            (wne.label_measures, QLabel),
+            (wne.spin_box_measures, QSpinBox),
+            ]
+        for i in range(5):
+            list_widgets_widget_classes.append((wne.labels_measure_type[i], QLabel))
+            list_widgets_widget_classes.append((wne.comboboxes_type[i], QComboBox))
+            list_widgets_widget_classes.append((wne.labels_measure_name[i], QLabel))
+            list_widgets_widget_classes.append((wne.line_edits_measure_name[i], QLineEdit))
+        list_widgets_widget_classes += [
+            (wne.button_discard, QPushButton),
+            (wne.button_add, QPushButton),
+        ]
+        for i, (widget, widget_class) in enumerate(list_widgets_widget_classes):
+            assert isinstance(widget, widget_class)
+            assert isinstance(wne.layout().itemAt(i).widget(), widget_class)
+
+    def test_widgets(self, main_window_fixture):
+        wne = main_window_fixture.window_new_exercise
+        assert wne.label_name.text() == "Exercise Name:"
+        assert wne.label_measures.text() == "Number of Measures:"
+        assert wne.spin_box_measures.minimum() == 0
+        assert wne.spin_box_measures.maximum() == 5
+        assert wne.button_add.text() == "Add Exercise"
+        assert wne.button_discard.text() == "Discard Exercise"
+        for i in range(5):
+            assert wne.labels_measure_type[i].text() == f"Type of Measure {i + 1}:"
+            assert wne.labels_measure_name[i].text() == f"Name of Measure {i + 1}:"
+
+    @pytest.mark.parametrize("value", [0, 1, 4, 5])
+    def test_spin_box_measures(self, main_window_fixture, value):
+        wne = main_window_fixture.window_new_exercise
+        wne.spin_box_measures.setValue(value)
+        for i in range(5):
+            if value > i:
+                assert wne.labels_measure_type[i].isVisible()
+                assert wne.comboboxes_type[i].isVisible()
+                assert wne.labels_measure_name[i].isVisible()
+                assert wne.line_edits_measure_name[i].isVisible()
+            else:
+                assert not wne.labels_measure_type[i].isVisible()
+                assert not wne.comboboxes_type[i].isVisible()
+                assert not wne.labels_measure_name[i].isVisible()
+                assert not wne.line_edits_measure_name[i].isVisible()

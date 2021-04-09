@@ -1,7 +1,9 @@
 from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout, QWidget,
                                QVBoxLayout, QTableWidget, QLabel, QFrame, QGroupBox, QComboBox,
-                               QPushButton, QGridLayout,
+                               QPushButton, QGridLayout, QFormLayout, QLineEdit, QSpinBox,
                                )
+from PySide6.QtCore import Qt
+
 from .constants import APPLICATION_NAME
 
 
@@ -39,7 +41,7 @@ class MainWindow(QMainWindow):
         self.widget_main = MainWidget(self)
         self.setCentralWidget(self.widget_main)
 
-        self.window_new_exercise = WindowNewExercise()
+        self.window_new_exercise = WindowNewExercise(self)
 
     def show_window_new_exercise(self):
         self.window_new_exercise.show()
@@ -184,5 +186,59 @@ class ComboboxDifficulty(QComboBox, BasicWidget):
 
 
 class WindowNewExercise(QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setWindowFlag(Qt.Window)
+        self.setWindowFlag(Qt.WindowStaysOnTopHint)
+        self.setWindowTitle("Add New Exercise")
+        self.setWindowModality(Qt.WindowModal)
+        self.setLayout(QFormLayout())
+
+        self.label_name = QLabel("Exercise Name:", self)
+        self.line_edit_name = QLineEdit(self)
+        self.layout().addRow(self.label_name, self.line_edit_name)
+        self.label_measures = QLabel("Number of Measures:", self)
+        self.spin_box_measures = QSpinBox(self)
+        self.min, self.max = 0, 5
+        self.spin_box_measures.setRange(self.min, self.max)
+        self.spin_box_measures.valueChanged.connect(self.change_visibility_measure_widgets)
+        self.layout().addRow(self.label_measures, self.spin_box_measures)
+
+        self.labels_measure_type = []
+        self.comboboxes_type = []
+        self.labels_measure_name = []
+        self.line_edits_measure_name = []
+        for i in range(self.min, self.max):
+            label_measure_type = QLabel(f"Type of Measure {i + 1}:", self)
+            self.labels_measure_type.append(label_measure_type)
+            combobox_type = QComboBox(self)
+            self.comboboxes_type.append(combobox_type)
+            self.layout().addRow(label_measure_type, combobox_type)
+            combobox_type.hide()
+            label_measure_type.hide()
+
+            label_measure_name = QLabel(f"Name of Measure {i + 1}:", self)
+            self.labels_measure_name.append(label_measure_name)
+            line_edit_measure_name = QLineEdit(self)
+            self.line_edits_measure_name.append(line_edit_measure_name)
+            self.layout().addRow(label_measure_name, line_edit_measure_name)
+            label_measure_name.hide()
+            line_edit_measure_name.hide()
+
+        self.button_discard = QPushButton("Discard Exercise", self)
+        self.button_add = QPushButton("Add Exercise", self)
+        self.layout().addRow(self.button_discard, self.button_add)
+
+    def change_visibility_measure_widgets(self):
+        number_measures = self.spin_box_measures.value()
+        for i in range(self.min, self.max):
+            if number_measures > i:
+                self.labels_measure_type[i].show()
+                self.comboboxes_type[i].show()
+                self.labels_measure_name[i].show()
+                self.line_edits_measure_name[i].show()
+            else:
+                self.labels_measure_type[i].hide()
+                self.comboboxes_type[i].hide()
+                self.labels_measure_name[i].hide()
+                self.line_edits_measure_name[i].hide()
