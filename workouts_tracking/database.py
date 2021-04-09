@@ -19,26 +19,21 @@ class Database:
 
     def close_connection(self):
         """Closes the connection in self.connection."""
+        self.connection.commit()
         self.connection.close()
         self.open_connection = False
 
     def initialize_tables(self):
         with self.connection as con:
             con.execute("CREATE TABLE exercises "
-                        "(id int,"
-                        "name text,"
+                        "(name text,"
                         "category text,"
                         "muscles_groups text,"
                         "difficulty int);")
             con.execute("CREATE TABLE workouts "
-                        "(id int,"
+                        "(name text,"
                         "date int)")
 
     def new_exercise(self, exercise: Exercise):
         with self.connection as con:
-            con.cursor().execute("SELECT MAX(id) FROM exercises")
-            identification = con.cursor().fetchone()
-            if identification is None:
-                identification = 0
-            con.execute("INSERT INTO exercises VALUES (?, ?, ?, ?, ?)",
-                        (identification, *exercise.record()))
+            con.execute("INSERT INTO exercises VALUES (?, ?, ?, ?)", exercise.record())
