@@ -3,7 +3,7 @@ import os
 from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout, QWidget,
                                QVBoxLayout, QTableWidget, QLabel, QFrame, QGroupBox, QComboBox,
                                QPushButton, QGridLayout, QFormLayout, QLineEdit, QSpinBox,
-                               QFileDialog,
+                               QFileDialog, QErrorMessage,
                                )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent, QIcon
@@ -60,8 +60,15 @@ class MainWindow(QMainWindow):
 
         self.file_dialog_load_database = QFileDialog(self)
 
-    def show_window_new_exercise(self):
-        self.window_new_exercise.show()
+        self.error_message = QErrorMessage(self)
+
+    def new_exercise_action(self):
+        if self.database is None:
+            self.error_message.setWindowTitle("Cannot Create New Exercise!")
+            self.error_message.showMessage("No database is loaded. Please create one with 'New "
+                                           "Database' or load one with 'Load Database'!")
+        else:
+            self.window_new_exercise.show()
 
     def new_database(self, database_path):
         self.database_path = database_path
@@ -82,10 +89,14 @@ class MainWindow(QMainWindow):
 
     def new_database_action(self):
         database_path = self.file_dialog_new_database.getSaveFileName(self)[0]
+        if database_path == "":
+            return
         self.new_database(database_path)
 
     def load_database_action(self):
         database_path = self.file_dialog_load_database.getOpenFileName(self)[0]
+        if database_path == "":
+            return
         self.load_database(database_path)
 
     def close_database_action(self):
@@ -153,6 +164,7 @@ class GroupBoxDatabase(QGroupBox, BasicWidget):
         self.button_load.clicked.connect(self.super_parent().load_database_action)
         self.layout().addWidget(self.button_load)
         self.button_close = QPushButton("Close Database", self)
+        self.button_close.clicked.connect(self.super_parent().close_database_action)
         self.layout().addWidget(self.button_close)
 
 
@@ -184,7 +196,7 @@ class GroupBoxExercise(QGroupBox, BasicWidget):
         self.button_perform = QPushButton("Perform Exercise", self)
         self.layout().addWidget(self.button_perform)
         self.button_new = QPushButton("New Exercise", self)
-        self.button_new.clicked.connect(self.super_parent().show_window_new_exercise)
+        self.button_new.clicked.connect(self.super_parent().new_exercise_action)
         self.layout().addWidget(self.button_new)
         self.button_edit = QPushButton("Edit Exercise", self)
         self.layout().addWidget(self.button_edit)
@@ -232,7 +244,7 @@ class ComboboxDifficulty(QComboBox, BasicWidget):
         self.addItems(difficulties)
 
 
-class WindowNewExercise(QWidget):
+class WindowNewExercise(BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.setWindowFlag(Qt.Window)
@@ -243,6 +255,7 @@ class WindowNewExercise(QWidget):
 
         self.label_name = QLabel("Exercise Name:", self)
         self.line_edit_name = QLineEdit(self)
+        self.line_edit_name.textChanged.connect(self.remove_style_sheet_line_edit_name)
         self.layout().addRow(self.label_name, self.line_edit_name)
         self.label_measures = QLabel("Number of Measures:", self)
         self.spin_box_measures = QSpinBox(self)
@@ -258,7 +271,8 @@ class WindowNewExercise(QWidget):
         for i in range(self.min, self.max):
             label_measure_type = QLabel(f"Type of Measure {i + 1}:", self)
             self.labels_measure_type.append(label_measure_type)
-            combobox_type = QComboBox(self)
+            line_edit_measure_name = QLineEdit(self)
+            combobox_type = ComboboxMeasureTypes(self, line_edit_measure_name)
             self.comboboxes_type.append(combobox_type)
             self.layout().addRow(label_measure_type, combobox_type)
             combobox_type.hide()
@@ -266,7 +280,8 @@ class WindowNewExercise(QWidget):
 
             label_measure_name = QLabel(f"Name of Measure {i + 1}:", self)
             self.labels_measure_name.append(label_measure_name)
-            line_edit_measure_name = QLineEdit(self)
+            line_edit_measure_name.textChanged.connect(
+                self.remove_style_sheet_line_edits_measure_name)
             self.line_edits_measure_name.append(line_edit_measure_name)
             self.layout().addRow(label_measure_name, line_edit_measure_name)
             label_measure_name.hide()
@@ -303,4 +318,43 @@ class WindowNewExercise(QWidget):
         self.close()
 
     def button_add_action(self):
-        self.close()
+        valid_text = True
+        if self.line_edit_name.text() == "":
+            self.line_edit_name.setStyleSheet("QLineEdit {background: rgb(255, 0, 0)}")
+            valid_text = False
+        for i in range(self.spin_box_measures.value()):
+            if self.line_edits_measure_name[i].text() == "":
+                self.line_edits_measure_name[i].setStyleSheet("QLineEdit {background: "
+                                                              "rgb(255, 0, 0)}")
+                valid_text = False
+        if valid_text:
+            self.close()
+
+    def remove_style_sheet_line_edit_name(self):
+        self.line_edit_name.setStyleSheet("")
+
+    def remove_style_sheet_line_edits_measure_name(self):
+        for line_edit in self.line_edits_measure_name:
+            if not line_edit.text() == "":
+                line_edit.setStyleSheet("")
+
+
+class ComboboxMeasureTypes(QComboBox, BasicWidget):
+    def __init__(self, parent, related_line_edit):
+        super().__init__(parent)
+        self.related_line_edit = related_line_edit
+        measure_types = [
+            "number (integer)", "number (float)", "sets", "repetitions", "repetitions per set",
+            "time", "time per set", "weight", "weight per set", "distance (m)",
+            "distance per set (m)", "text"
+        ]
+        self.addItems(measure_types)
+
+        self.currentIndexChanged.connect(self.set_default_measure_name)
+
+    def set_default_measure_name(self, index):
+        default_measure_names = [
+            "", "", "Sets", "Repetitions", "Repetitions per Set", "Time", "Time per Set", "Weight",
+            "Weight per Set", "Distance", "Distance per Set", ""
+        ]
+        self.related_line_edit.setText(default_measure_names[index])

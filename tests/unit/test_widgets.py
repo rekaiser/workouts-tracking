@@ -1,19 +1,20 @@
 import pytest
 from PySide6.QtWidgets import (QSplitter, QLayout, QHBoxLayout, QWidget, QVBoxLayout, QTableWidget,
                                QLabel, QPushButton, QGridLayout, QFormLayout, QLineEdit, QSpinBox,
-                               QComboBox, QFileDialog,
+                               QFileDialog,
                                )
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon
 
 from workouts_tracking.gui import (HLineSunken, ComboboxCategory, GroupBoxDatabase, ComboboxMuscles,
                                    GroupBoxWorkout, GroupBoxExercise, GroupBoxAvailableExercises,
-                                   ComboboxDifficulty, WindowNewExercise,
+                                   ComboboxDifficulty, WindowNewExercise, ComboboxMeasureTypes
                                    )
 
 
 class TestMainProperties:
     def test_main_window_title(self, main_window_fixture):
+        main_window_fixture.close_database()
         assert main_window_fixture.windowTitle() == "Workouts Tracking"
 
     def test_logo(self, main_window_fixture):
@@ -191,7 +192,7 @@ class TestWindowNewExercise:
             ]
         for i in range(5):
             list_widgets_widget_classes.append((wne.labels_measure_type[i], QLabel))
-            list_widgets_widget_classes.append((wne.comboboxes_type[i], QComboBox))
+            list_widgets_widget_classes.append((wne.comboboxes_type[i], ComboboxMeasureTypes))
             list_widgets_widget_classes.append((wne.labels_measure_name[i], QLabel))
             list_widgets_widget_classes.append((wne.line_edits_measure_name[i], QLineEdit))
         list_widgets_widget_classes += [
@@ -215,7 +216,8 @@ class TestWindowNewExercise:
             assert wne.labels_measure_name[i].text() == f"Name of Measure {i + 1}:"
 
     @pytest.mark.parametrize("value", [0, 1, 4, 5])
-    def test_spin_box_measures(self, main_window_fixture, value):
+    def test_spin_box_measures(self, main_window_fixture, database_filename_fixture, value):
+        main_window_fixture.new_database(database_filename_fixture)
         wne = main_window_fixture.window_new_exercise
         wne.spin_box_measures.setValue(value)
         for i in range(5):
@@ -246,21 +248,87 @@ class TestWindowNewExercise:
             assert not wne.labels_measure_name[i].isVisible()
             assert not wne.line_edits_measure_name[i].isVisible()
 
-    def test_discard_button(self, main_window_fixture):
+    def test_discard_button(self, main_window_fixture, database_filename_fixture):
         mwf = main_window_fixture
-        mwf.show_window_new_exercise()
+        mwf.new_database(database_filename_fixture)
+        mwf.new_exercise_action()
         wne = mwf.window_new_exercise
         assert wne.isVisible()
         wne.button_discard.click()
         assert not wne.isVisible()
 
-    def test_add_button(self, main_window_fixture):
+    def test_add_button(self, main_window_fixture, database_filename_fixture):
         mwf = main_window_fixture
-        mwf.show_window_new_exercise()
+        mwf.close_database()
+        mwf.new_database(database_filename_fixture)
+        mwf.new_exercise_action()
         wne = mwf.window_new_exercise
         assert wne.isVisible()
+        wne.line_edit_name.setText("Test Name")
         wne.button_add.click()
         assert not wne.isVisible()
+
+    def test_new_exercise_without_database(self, main_window_fixture):
+        mwf = main_window_fixture
+        mwf.close_database()
+        assert mwf.database is None
+        mwf.widget_main.widget_right.groupbox_exercise.button_new.click()
+        assert not mwf.window_new_exercise.isVisible()
+        assert mwf.error_message.isVisible()
+        assert mwf.error_message.windowTitle() == "Cannot Create New Exercise!"
+        assert mwf.error_message.layout().itemAt(1).widget().toPlainText() == \
+               "No database is loaded. Please create one with 'New Database' or load one with " \
+               "'Load Database'!"
+
+    def test_add_exercise_without_name(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        wne = mwf.window_new_exercise
+        mwf.widget_main.widget_right.groupbox_exercise.button_new.click()
+        assert wne.isVisible()
+        assert wne.line_edit_name.text() == ""
+        wne.button_add.click()
+        assert wne.isVisible()
+        assert wne.line_edit_name.styleSheet() == "QLineEdit {background: rgb(255, 0, 0)}"
+        wne.line_edit_name.setText("1")
+        assert wne.line_edit_name.styleSheet() == ""
+
+    def test_add_exercise_without_measure_name(self, main_window_fixture,
+                                               database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        wne = mwf.window_new_exercise
+        mwf.widget_main.widget_right.groupbox_exercise.button_new.click()
+        wne.line_edit_name.setText("Test Exercise")
+        assert wne.isVisible()
+        wne.spin_box_measures.setValue(1)
+        wne.button_add.click()
+        assert wne.isVisible()
+        assert wne.line_edits_measure_name[0].styleSheet() == "QLineEdit " \
+                                                              "{background: rgb(255, 0, 0)}"
+        wne.line_edits_measure_name[0].setText("Some name")
+        assert wne.line_edits_measure_name[0].styleSheet() == ""
+
+    def test_comboboxes(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        wne = mwf.window_new_exercise
+        measure_types = [
+            "number (integer)", "number (float)", "sets", "repetitions", "repetitions per set",
+            "time", "time per set", "weight", "weight per set", "distance (m)",
+            "distance per set (m)", "text"
+        ]
+        for j, combobox in enumerate(wne.comboboxes_type):
+            for i, measure_type in enumerate(measure_types):
+                assert combobox.itemText(i) == measure_type
+            assert combobox.related_line_edit is wne.line_edits_measure_name[j]
+        default_measure_names = [
+            "", "", "Sets", "Repetitions", "Repetitions per Set", "Time", "Time per Set", "Weight",
+            "Weight per Set", "Distance", "Distance per Set", ""
+        ]
+        for i, measure_name in enumerate(default_measure_names):
+            wne.comboboxes_type[1].setCurrentIndex(i)
+            assert wne.line_edits_measure_name[1].text() == measure_name
 
 
 class TestDatabaseFileDialogs:

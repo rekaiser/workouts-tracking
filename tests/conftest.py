@@ -54,7 +54,7 @@ def empty_database_fixture(tmp_path):
 
 @pytest.fixture()
 def exercise_fixture():
-    exercise = Exercise("Test Exercise")
+    exercise = Exercise("Test Exercise", 4)
     yield exercise
 
 
