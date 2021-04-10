@@ -315,11 +315,20 @@ class TestWindowNewExercise:
         wne = mwf.window_new_exercise
         measure_types = [
             "number (integer)", "number (float)", "sets", "repetitions", "repetitions per set",
-            "time", "time per set", "weight", "weight per set", "text"
+            "time", "time per set", "weight", "weight per set", "distance (m)",
+            "distance per set (m)", "text"
         ]
-        for combobox in wne.comboboxes_type:
+        for j, combobox in enumerate(wne.comboboxes_type):
             for i, measure_type in enumerate(measure_types):
                 assert combobox.itemText(i) == measure_type
+            assert combobox.related_line_edit is wne.line_edits_measure_name[j]
+        default_measure_names = [
+            "", "", "Sets", "Repetitions", "Repetitions per Set", "Time", "Time per Set", "Weight",
+            "Weight per Set", "Distance", "Distance per Set", ""
+        ]
+        for i, measure_name in enumerate(default_measure_names):
+            wne.comboboxes_type[1].setCurrentIndex(i)
+            assert wne.line_edits_measure_name[1].text() == measure_name
 
 
 class TestDatabaseFileDialogs:

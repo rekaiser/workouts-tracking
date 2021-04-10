@@ -271,7 +271,8 @@ class WindowNewExercise(BasicWidget):
         for i in range(self.min, self.max):
             label_measure_type = QLabel(f"Type of Measure {i + 1}:", self)
             self.labels_measure_type.append(label_measure_type)
-            combobox_type = ComboboxMeasureTypes(self)
+            line_edit_measure_name = QLineEdit(self)
+            combobox_type = ComboboxMeasureTypes(self, line_edit_measure_name)
             self.comboboxes_type.append(combobox_type)
             self.layout().addRow(label_measure_type, combobox_type)
             combobox_type.hide()
@@ -279,7 +280,6 @@ class WindowNewExercise(BasicWidget):
 
             label_measure_name = QLabel(f"Name of Measure {i + 1}:", self)
             self.labels_measure_name.append(label_measure_name)
-            line_edit_measure_name = QLineEdit(self)
             line_edit_measure_name.textChanged.connect(
                 self.remove_style_sheet_line_edits_measure_name)
             self.line_edits_measure_name.append(line_edit_measure_name)
@@ -340,10 +340,21 @@ class WindowNewExercise(BasicWidget):
 
 
 class ComboboxMeasureTypes(QComboBox, BasicWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, related_line_edit):
         super().__init__(parent)
+        self.related_line_edit = related_line_edit
         measure_types = [
             "number (integer)", "number (float)", "sets", "repetitions", "repetitions per set",
-            "time", "time per set", "weight", "weight per set", "text"
+            "time", "time per set", "weight", "weight per set", "distance (m)",
+            "distance per set (m)", "text"
         ]
         self.addItems(measure_types)
+
+        self.currentIndexChanged.connect(self.set_default_measure_name)
+
+    def set_default_measure_name(self, index):
+        default_measure_names = [
+            "", "", "Sets", "Repetitions", "Repetitions per Set", "Time", "Time per Set", "Weight",
+            "Weight per Set", "Distance", "Distance per Set", ""
+        ]
+        self.related_line_edit.setText(default_measure_names[index])
