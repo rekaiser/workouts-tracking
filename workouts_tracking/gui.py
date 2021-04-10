@@ -244,7 +244,7 @@ class ComboboxDifficulty(QComboBox, BasicWidget):
         self.addItems(difficulties)
 
 
-class WindowNewExercise(QWidget):
+class WindowNewExercise(BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.setWindowFlag(Qt.Window)
@@ -255,6 +255,7 @@ class WindowNewExercise(QWidget):
 
         self.label_name = QLabel("Exercise Name:", self)
         self.line_edit_name = QLineEdit(self)
+        self.line_edit_name.textChanged.connect(self.remove_style_sheet_line_edit_name)
         self.layout().addRow(self.label_name, self.line_edit_name)
         self.label_measures = QLabel("Number of Measures:", self)
         self.spin_box_measures = QSpinBox(self)
@@ -279,6 +280,8 @@ class WindowNewExercise(QWidget):
             label_measure_name = QLabel(f"Name of Measure {i + 1}:", self)
             self.labels_measure_name.append(label_measure_name)
             line_edit_measure_name = QLineEdit(self)
+            line_edit_measure_name.textChanged.connect(
+                self.remove_style_sheet_line_edits_measure_name)
             self.line_edits_measure_name.append(line_edit_measure_name)
             self.layout().addRow(label_measure_name, line_edit_measure_name)
             label_measure_name.hide()
@@ -315,4 +318,24 @@ class WindowNewExercise(QWidget):
         self.close()
 
     def button_add_action(self):
-        self.close()
+        valid_text = True
+        if self.line_edit_name.text() == "":
+            self.line_edit_name.setStyleSheet("QLineEdit {background: rgb(255, 0, 0)}")
+            valid_text = False
+        for i in range(self.spin_box_measures.value()):
+            if self.line_edits_measure_name[i].text() == "":
+                self.line_edits_measure_name[i].setStyleSheet("QLineEdit {background: "
+                                                              "rgb(255, 0, 0)}")
+                valid_text = False
+        if valid_text:
+            self.close()
+
+    def remove_style_sheet_line_edit_name(self):
+        self.line_edit_name.setStyleSheet("")
+
+    def remove_style_sheet_line_edits_measure_name(self):
+        for line_edit in self.line_edits_measure_name:
+            if not line_edit.text() == "":
+                line_edit.setStyleSheet("")
+
+

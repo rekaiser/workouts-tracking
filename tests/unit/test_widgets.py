@@ -259,10 +259,12 @@ class TestWindowNewExercise:
 
     def test_add_button(self, main_window_fixture, database_filename_fixture):
         mwf = main_window_fixture
+        mwf.close_database()
         mwf.new_database(database_filename_fixture)
         mwf.new_exercise_action()
         wne = mwf.window_new_exercise
         assert wne.isVisible()
+        wne.line_edit_name.setText("Test Name")
         wne.button_add.click()
         assert not wne.isVisible()
 
@@ -277,6 +279,35 @@ class TestWindowNewExercise:
         assert mwf.error_message.layout().itemAt(1).widget().toPlainText() == \
                "No database is loaded. Please create one with 'New Database' or load one with " \
                "'Load Database'!"
+
+    def test_add_exercise_without_name(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        wne = mwf.window_new_exercise
+        mwf.widget_main.widget_right.groupbox_exercise.button_new.click()
+        assert wne.isVisible()
+        assert wne.line_edit_name.text() == ""
+        wne.button_add.click()
+        assert wne.isVisible()
+        assert wne.line_edit_name.styleSheet() == "QLineEdit {background: rgb(255, 0, 0)}"
+        wne.line_edit_name.setText("1")
+        assert wne.line_edit_name.styleSheet() == ""
+
+    def test_add_exercise_without_measure_name(self, main_window_fixture,
+                                               database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        wne = mwf.window_new_exercise
+        mwf.widget_main.widget_right.groupbox_exercise.button_new.click()
+        wne.line_edit_name.setText("Test Exercise")
+        assert wne.isVisible()
+        wne.spin_box_measures.setValue(1)
+        wne.button_add.click()
+        assert wne.isVisible()
+        assert wne.line_edits_measure_name[0].styleSheet() == "QLineEdit " \
+                                                              "{background: rgb(255, 0, 0)}"
+        wne.line_edits_measure_name[0].setText("Some name")
+        assert wne.line_edits_measure_name[0].styleSheet() == ""
 
 
 class TestDatabaseFileDialogs:
