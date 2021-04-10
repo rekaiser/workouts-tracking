@@ -16,7 +16,16 @@ class Database:
         self.connection = sql.connect(self.filename)
         self.cursor = self.connection.cursor()
         self.open_connection = True
-        self.initialize_tables()
+        if self.is_empty():
+            self.initialize_tables()
+
+    def is_empty(self):
+        self.cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table';")
+        tables = self.cursor.fetchall()
+        if len(tables) == 0:
+            return True
+        else:
+            return False
 
     def close_connection(self):
         """Closes the connection in self.connection."""
@@ -26,11 +35,8 @@ class Database:
 
     def initialize_tables(self):
         with self.connection:
-            self.cursor.execute("CREATE TABLE exercises "
-                                "(name text);")
-            self.cursor.execute("CREATE TABLE workouts "
-                                "(name text,"
-                                "date int);")
+            self.cursor.execute("CREATE TABLE exercises (name text);")
+            self.cursor.execute("CREATE TABLE workouts (name text, date int);")
 
     def new_exercise(self, exercise: Exercise):
         with self.connection:

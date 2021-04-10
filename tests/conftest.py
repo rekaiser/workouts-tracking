@@ -56,3 +56,8 @@ def empty_database_fixture(tmp_path):
 def exercise_fixture():
     exercise = Exercise("Test Exercise")
     yield exercise
+
+
+@pytest.fixture()
+def database_filename_fixture(tmp_path):
+    yield tmp_path / "test_database.db"

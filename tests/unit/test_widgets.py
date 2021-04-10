@@ -1,7 +1,7 @@
 import pytest
 from PySide6.QtWidgets import (QSplitter, QLayout, QHBoxLayout, QWidget, QVBoxLayout, QTableWidget,
                                QLabel, QPushButton, QGridLayout, QFormLayout, QLineEdit, QSpinBox,
-                               QComboBox,
+                               QComboBox, QFileDialog,
                                )
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon
@@ -261,3 +261,23 @@ class TestWindowNewExercise:
         assert wne.isVisible()
         wne.button_add.click()
         assert not wne.isVisible()
+
+
+class TestDatabaseFileDialogs:
+    def test_file_dialog_new_database(self, main_window_fixture):
+        mwf = main_window_fixture
+        assert isinstance(mwf.file_dialog_new_database, QFileDialog)
+        assert not mwf.file_dialog_new_database.isVisible()
+
+    def test_file_dialog_load_database(self, main_window_fixture):
+        mwf = main_window_fixture
+        assert isinstance(mwf.file_dialog_load_database, QFileDialog)
+        assert not mwf.file_dialog_load_database.isVisible()
+
+    def test_close_database(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        mwf.close_database()
+        assert mwf.database_path is None
+        assert mwf.database is None
+        assert mwf.windowTitle() == "Workouts Tracking"
