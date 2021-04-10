@@ -14,6 +14,7 @@ from workouts_tracking.gui import (HLineSunken, ComboboxCategory, GroupBoxDataba
 
 class TestMainProperties:
     def test_main_window_title(self, main_window_fixture):
+        main_window_fixture.close_database()
         assert main_window_fixture.windowTitle() == "Workouts Tracking"
 
     def test_logo(self, main_window_fixture):
@@ -215,7 +216,8 @@ class TestWindowNewExercise:
             assert wne.labels_measure_name[i].text() == f"Name of Measure {i + 1}:"
 
     @pytest.mark.parametrize("value", [0, 1, 4, 5])
-    def test_spin_box_measures(self, main_window_fixture, value):
+    def test_spin_box_measures(self, main_window_fixture, database_filename_fixture, value):
+        main_window_fixture.new_database(database_filename_fixture)
         wne = main_window_fixture.window_new_exercise
         wne.spin_box_measures.setValue(value)
         for i in range(5):
@@ -246,21 +248,35 @@ class TestWindowNewExercise:
             assert not wne.labels_measure_name[i].isVisible()
             assert not wne.line_edits_measure_name[i].isVisible()
 
-    def test_discard_button(self, main_window_fixture):
+    def test_discard_button(self, main_window_fixture, database_filename_fixture):
         mwf = main_window_fixture
-        mwf.show_window_new_exercise()
+        mwf.new_database(database_filename_fixture)
+        mwf.new_exercise_action()
         wne = mwf.window_new_exercise
         assert wne.isVisible()
         wne.button_discard.click()
         assert not wne.isVisible()
 
-    def test_add_button(self, main_window_fixture):
+    def test_add_button(self, main_window_fixture, database_filename_fixture):
         mwf = main_window_fixture
-        mwf.show_window_new_exercise()
+        mwf.new_database(database_filename_fixture)
+        mwf.new_exercise_action()
         wne = mwf.window_new_exercise
         assert wne.isVisible()
         wne.button_add.click()
         assert not wne.isVisible()
+
+    def test_new_exercise_without_database(self, main_window_fixture):
+        mwf = main_window_fixture
+        mwf.close_database()
+        assert mwf.database is None
+        mwf.widget_main.widget_right.groupbox_exercise.button_new.click()
+        assert not mwf.window_new_exercise.isVisible()
+        assert mwf.error_message.isVisible()
+        assert mwf.error_message.windowTitle() == "Cannot Create New Exercise!"
+        assert mwf.error_message.layout().itemAt(1).widget().toPlainText() == \
+               "No database is loaded. Please create one with 'New Database' or load one with " \
+               "'Load Database'!"
 
 
 class TestDatabaseFileDialogs:

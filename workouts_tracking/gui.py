@@ -3,7 +3,7 @@ import os
 from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout, QWidget,
                                QVBoxLayout, QTableWidget, QLabel, QFrame, QGroupBox, QComboBox,
                                QPushButton, QGridLayout, QFormLayout, QLineEdit, QSpinBox,
-                               QFileDialog,
+                               QFileDialog, QErrorMessage,
                                )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent, QIcon
@@ -60,8 +60,15 @@ class MainWindow(QMainWindow):
 
         self.file_dialog_load_database = QFileDialog(self)
 
-    def show_window_new_exercise(self):
-        self.window_new_exercise.show()
+        self.error_message = QErrorMessage(self)
+
+    def new_exercise_action(self):
+        if self.database is None:
+            self.error_message.setWindowTitle("Cannot Create New Exercise!")
+            self.error_message.showMessage("No database is loaded. Please create one with 'New "
+                                           "Database' or load one with 'Load Database'!")
+        else:
+            self.window_new_exercise.show()
 
     def new_database(self, database_path):
         self.database_path = database_path
@@ -82,10 +89,14 @@ class MainWindow(QMainWindow):
 
     def new_database_action(self):
         database_path = self.file_dialog_new_database.getSaveFileName(self)[0]
+        if database_path == "":
+            return
         self.new_database(database_path)
 
     def load_database_action(self):
         database_path = self.file_dialog_load_database.getOpenFileName(self)[0]
+        if database_path == "":
+            return
         self.load_database(database_path)
 
     def close_database_action(self):
@@ -153,6 +164,7 @@ class GroupBoxDatabase(QGroupBox, BasicWidget):
         self.button_load.clicked.connect(self.super_parent().load_database_action)
         self.layout().addWidget(self.button_load)
         self.button_close = QPushButton("Close Database", self)
+        self.button_close.clicked.connect(self.super_parent().close_database_action)
         self.layout().addWidget(self.button_close)
 
 
@@ -184,7 +196,7 @@ class GroupBoxExercise(QGroupBox, BasicWidget):
         self.button_perform = QPushButton("Perform Exercise", self)
         self.layout().addWidget(self.button_perform)
         self.button_new = QPushButton("New Exercise", self)
-        self.button_new.clicked.connect(self.super_parent().show_window_new_exercise)
+        self.button_new.clicked.connect(self.super_parent().new_exercise_action)
         self.layout().addWidget(self.button_new)
         self.button_edit = QPushButton("Edit Exercise", self)
         self.layout().addWidget(self.button_edit)
