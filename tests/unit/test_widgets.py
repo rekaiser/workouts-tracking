@@ -1,14 +1,14 @@
 import pytest
 from PySide6.QtWidgets import (QSplitter, QLayout, QHBoxLayout, QWidget, QVBoxLayout, QTableWidget,
                                QLabel, QPushButton, QGridLayout, QFormLayout, QLineEdit, QSpinBox,
-                               QComboBox, QFileDialog,
+                               QFileDialog,
                                )
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon
 
 from workouts_tracking.gui import (HLineSunken, ComboboxCategory, GroupBoxDatabase, ComboboxMuscles,
                                    GroupBoxWorkout, GroupBoxExercise, GroupBoxAvailableExercises,
-                                   ComboboxDifficulty, WindowNewExercise,
+                                   ComboboxDifficulty, WindowNewExercise, ComboboxMeasureTypes
                                    )
 
 
@@ -192,7 +192,7 @@ class TestWindowNewExercise:
             ]
         for i in range(5):
             list_widgets_widget_classes.append((wne.labels_measure_type[i], QLabel))
-            list_widgets_widget_classes.append((wne.comboboxes_type[i], QComboBox))
+            list_widgets_widget_classes.append((wne.comboboxes_type[i], ComboboxMeasureTypes))
             list_widgets_widget_classes.append((wne.labels_measure_name[i], QLabel))
             list_widgets_widget_classes.append((wne.line_edits_measure_name[i], QLineEdit))
         list_widgets_widget_classes += [
@@ -308,6 +308,18 @@ class TestWindowNewExercise:
                                                               "{background: rgb(255, 0, 0)}"
         wne.line_edits_measure_name[0].setText("Some name")
         assert wne.line_edits_measure_name[0].styleSheet() == ""
+
+    def test_comboboxes(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        wne = mwf.window_new_exercise
+        measure_types = [
+            "number (integer)", "number (float)", "sets", "repetitions", "repetitions per set",
+            "time", "time per set", "weight", "weight per set", "text"
+        ]
+        for combobox in wne.comboboxes_type:
+            for i, measure_type in enumerate(measure_types):
+                assert combobox.itemText(i) == measure_type
 
 
 class TestDatabaseFileDialogs:

@@ -271,7 +271,7 @@ class WindowNewExercise(BasicWidget):
         for i in range(self.min, self.max):
             label_measure_type = QLabel(f"Type of Measure {i + 1}:", self)
             self.labels_measure_type.append(label_measure_type)
-            combobox_type = QComboBox(self)
+            combobox_type = ComboboxMeasureTypes(self)
             self.comboboxes_type.append(combobox_type)
             self.layout().addRow(label_measure_type, combobox_type)
             combobox_type.hide()
@@ -339,3 +339,11 @@ class WindowNewExercise(BasicWidget):
                 line_edit.setStyleSheet("")
 
 
+class ComboboxMeasureTypes(QComboBox, BasicWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        measure_types = [
+            "number (integer)", "number (float)", "sets", "repetitions", "repetitions per set",
+            "time", "time per set", "weight", "weight per set", "text"
+        ]
+        self.addItems(measure_types)
