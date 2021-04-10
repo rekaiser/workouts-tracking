@@ -3,11 +3,13 @@ import os
 from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout, QWidget,
                                QVBoxLayout, QTableWidget, QLabel, QFrame, QGroupBox, QComboBox,
                                QPushButton, QGridLayout, QFormLayout, QLineEdit, QSpinBox,
+                               QFileDialog,
                                )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent, QIcon
 
 from .constants import APPLICATION_NAME
+from .database import Database
 
 
 def create_app(sys_argv):
@@ -41,6 +43,8 @@ class BasicWidget(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.database_path = None
+        self.database = None
         self.installation_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.widget_main = MainWidget(self)
         self.setCentralWidget(self.widget_main)
@@ -50,8 +54,15 @@ class MainWindow(QMainWindow):
 
         self.window_new_exercise = WindowNewExercise(self)
 
+        self.file_dialog_new_database = QFileDialog(self)
+
     def show_window_new_exercise(self):
         self.window_new_exercise.show()
+
+    def new_database(self):
+        self.database_path = self.file_dialog_new_database.getSaveFileName(self)[0]
+        self.setWindowTitle(APPLICATION_NAME + " - " + str(os.path.basename(self.database_path)))
+        self.database = Database(self.database_path)
 
 
 class MainWidget(QSplitter, BasicWidget):
@@ -109,6 +120,7 @@ class GroupBoxDatabase(QGroupBox, BasicWidget):
         super().__init__(title, parent)
         self.setLayout(QHBoxLayout(self))
         self.button_new = QPushButton("New Database", self)
+        self.button_new.clicked.connect(self.super_parent().new_database)
         self.layout().addWidget(self.button_new)
         self.button_load = QPushButton("Load Database", self)
         self.layout().addWidget(self.button_load)
