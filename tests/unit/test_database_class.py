@@ -34,3 +34,11 @@ class TestDatabaseMethods:
             edf.cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
             tables = edf.cursor.fetchall()
             assert ("exercise_1",) in tables
+
+    def test_get_table_names(self, empty_database_fixture, exercise_fixture):
+        edf = empty_database_fixture
+        tables = edf.get_table_names()
+        initial_tables = ["exercises", "workouts"]
+        for table in initial_tables:
+            assert table in tables
+        assert "exercise_1" not in tables
