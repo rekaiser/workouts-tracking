@@ -1,6 +1,7 @@
 import sqlite3 as sql
 
 from workouts_tracking.database import Database
+from workouts_tracking.exercise import Exercise
 
 
 class TestDatabaseMethods:
@@ -45,3 +46,15 @@ class TestDatabaseMethods:
         edf.new_exercise(exercise_fixture)
         edf.new_exercise(exercise_fixture)
         assert "exercise_2" in edf.get_table_names()
+
+    def test_get_exercise_names(self, empty_database_fixture):
+        edf = empty_database_fixture
+        exercises_to_be_added = [
+            Exercise("Exercise 1", 3),
+            Exercise("Must Have", 1),
+            Exercise("Running", 5)
+        ]
+        for exercise in exercises_to_be_added:
+            edf.new_exercise(exercise)
+        for exercise in exercises_to_be_added:
+            assert exercise.name in edf.get_exercise_names()
