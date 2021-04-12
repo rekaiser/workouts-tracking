@@ -215,9 +215,10 @@ class TestWindowNewExercise:
             assert wne.labels_measure_type[i].text() == f"Type of Measure {i + 1}:"
             assert wne.labels_measure_name[i].text() == f"Name of Measure {i + 1}:"
 
-    @pytest.mark.parametrize("value", [0, 1, 4, 5])
+    @pytest.mark.parametrize("value", [5, 1, 4, 0])
     def test_spin_box_measures(self, main_window_fixture, database_filename_fixture, value):
         main_window_fixture.new_database(database_filename_fixture)
+        main_window_fixture.widget_main.widget_right.groupbox_exercise.button_new.click()
         wne = main_window_fixture.window_new_exercise
         wne.spin_box_measures.setValue(value)
         for i in range(5):
