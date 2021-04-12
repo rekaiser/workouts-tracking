@@ -23,7 +23,11 @@ source venv/bin/activate
 ```bash
 pip install -e .
 ```
-5. Now Workouts Tracking is ready to be run within the virtual environment with
+5. The GUI requires the `libOpenGL` library. So in case you need it, install it with:
+```bash
+sudo apt install libopengl0
+```
+6. Now Workouts Tracking is ready to be run within the virtual environment with
 either
 ```bash
 WT
