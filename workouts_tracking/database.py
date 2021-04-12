@@ -53,3 +53,12 @@ class Database:
         for raw_table_tuple in raw_table_tuples:
             table_names.append(raw_table_tuple[0])
         return table_names
+
+    def get_exercise_names(self):
+        with self.connection:
+            self.cursor.execute("SELECT name FROM exercises;")
+            raw_exercise_tuples = self.cursor.fetchall()
+        exercise_names = []
+        for raw_exercise_tuple in raw_exercise_tuples:
+            exercise_names.append(raw_exercise_tuple[0])
+        return exercise_names
