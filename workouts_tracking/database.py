@@ -44,3 +44,12 @@ class Database:
             self.cursor.execute("INSERT INTO exercises VALUES (?, ?);", exercise.record())
             last_row_id = self.cursor.lastrowid
             self.cursor.execute(f"CREATE TABLE exercise_{last_row_id} (date int);")
+
+    def get_table_names(self):
+        with self.connection:
+            self.cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table';")
+            raw_table_tuples = self.cursor.fetchall()
+        table_names = []
+        for raw_table_tuple in raw_table_tuples:
+            table_names.append(raw_table_tuple[0])
+        return table_names

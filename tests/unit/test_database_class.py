@@ -42,3 +42,6 @@ class TestDatabaseMethods:
         for table in initial_tables:
             assert table in tables
         assert "exercise_1" not in tables
+        edf.new_exercise(exercise_fixture)
+        edf.new_exercise(exercise_fixture)
+        assert "exercise_2" in edf.get_table_names()
