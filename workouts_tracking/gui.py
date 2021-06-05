@@ -10,6 +10,7 @@ from PySide6.QtGui import QCloseEvent, QIcon
 
 from .constants import APPLICATION_NAME
 from .database import Database
+from .exercise import Exercise
 
 
 def create_app(sys_argv):
@@ -328,6 +329,8 @@ class WindowNewExercise(BasicWidget):
                                                               "rgb(255, 0, 0)}")
                 valid_text = False
         if valid_text:
+            e = Exercise(self.line_edit_name.text(), self.spin_box_measures.value())
+            self.super_parent().database.new_exercise(e)
             self.close()
 
     def remove_style_sheet_line_edit_name(self):

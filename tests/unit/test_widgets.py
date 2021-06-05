@@ -268,6 +268,7 @@ class TestWindowNewExercise:
         wne.line_edit_name.setText("Test Name")
         wne.button_add.click()
         assert not wne.isVisible()
+        assert "Test Name" in mwf.database.get_exercise_names()
 
     def test_new_exercise_without_database(self, main_window_fixture):
         mwf = main_window_fixture
