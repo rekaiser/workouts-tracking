@@ -46,7 +46,6 @@ class TestBasicDatabase:
                 test_content = test_database.cursor.fetchall()
             for line in reference_content:
                 assert line in test_content
-        assert False
 
 
 class TestDatabaseMethods:

@@ -1,7 +1,9 @@
 import sqlite3 as sql
 
 from workouts_tracking.exercise import Exercise
-from workouts_tracking.constants import DATABASE_TABLES
+from workouts_tracking.constants import (DATABASE_TABLES_DICTIONARY, DATABASE_TABLE_ENTRIES,
+                                         DATABASE_TABLE_COLUMNS,
+                                         )
 
 
 class DatabaseError(Exception):
@@ -36,9 +38,20 @@ class Database:
 
     def initialize_tables(self):
         with self.connection:
-            for table in DATABASE_TABLES.items():
-                columns_string = ", ".join(table[1])
-                self.cursor.execute(f"CREATE TABLE {table[0]} ({columns_string});")
+            for table, columns in DATABASE_TABLES_DICTIONARY.items():
+                columns_string = ", ".join(columns)
+                self.cursor.execute(f"CREATE TABLE {table} ({columns_string});")
+                for entry in DATABASE_TABLE_ENTRIES[table]:
+                    columns_string = ", ".join(DATABASE_TABLE_COLUMNS[table])
+                    entry_string_list = []
+                    for value in entry:
+                        if isinstance(value, str):
+                            entry_string_list.append(f"'{value}'")
+                        else:
+                            entry_string_list.append(f"{value}")
+                    entry_string = ", ".join(entry_string_list)
+                    self.cursor.execute(f"INSERT INTO {table} ({columns_string}) "
+                                        f"values ({entry_string});")
 
     def new_exercise(self, exercise: Exercise):
         pass
