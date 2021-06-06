@@ -81,4 +81,4 @@ class Database:
         column_names = []
         for raw_column in raw_columns:
             column_names.append(raw_column[1])
-        return  column_names
+        return column_names

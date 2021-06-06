@@ -176,7 +176,8 @@ DATABASE_TABLES_DICTIONARY = {
                            f"foreign key ({DATABASE_PERFORMANCE_COLUMNS[0]}) "
                            f"references {DATABASE_WORKOUT}({DATABASE_WORKOUT_COLUMNS[0]})",
                            f"foreign key ({DATABASE_PERFORMANCE_COLUMNS[1]}) "
-                           f"references {DATABASE_EXE_EXERCISE}({DATABASE_EXE_EXERCISE_COLUMNS[1]})",
+                           f"references {DATABASE_EXE_EXERCISE}"
+                           f"({DATABASE_EXE_EXERCISE_COLUMNS[1]})",
                            f"foreign key ({DATABASE_PERFORMANCE_COLUMNS[2]}) "
                            f"references {DATABASE_MEASURE}({DATABASE_MEASURE_COLUMNS[0]})",
                            ],

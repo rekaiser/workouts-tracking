@@ -1,7 +1,6 @@
 import sqlite3 as sql
 
 from workouts_tracking.database import Database
-from workouts_tracking.constants import TESTS_DIR
 
 
 class TestBasicDatabase:
