@@ -60,3 +60,12 @@ class Database:
         for raw_tuple in raw_exercise_names_tuple:
             exercise_names.append(raw_tuple[0])
         return exercise_names
+
+    def get_column_names_for_table(self, table_name):
+        with self.connection:
+            self.cursor.execute(f"PRAGMA table_info ({table_name});")
+            raw_columns = self.cursor.fetchall()
+        column_names = []
+        for raw_column in raw_columns:
+            column_names.append(raw_column[1])
+        return  column_names
