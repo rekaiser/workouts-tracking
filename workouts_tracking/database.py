@@ -1,6 +1,7 @@
 import sqlite3 as sql
 
 from workouts_tracking.exercise import Exercise
+from workouts_tracking.constants import DATABASE_TABLES
 
 
 class DatabaseError(Exception):
@@ -35,15 +36,12 @@ class Database:
 
     def initialize_tables(self):
         with self.connection:
-            columns_string = Exercise("", 0).create_columns_string()
-            self.cursor.execute(f"CREATE TABLE exercises ({columns_string});")
-            self.cursor.execute("CREATE TABLE workouts (name text, date int);")
+            for table in DATABASE_TABLES.items():
+                columns_string = ", ".join(table[1])
+                self.cursor.execute(f"CREATE TABLE {table[0]} ({columns_string});")
 
     def new_exercise(self, exercise: Exercise):
-        with self.connection:
-            self.cursor.execute("INSERT INTO exercises VALUES (?, ?);", exercise.record())
-            last_row_id = self.cursor.lastrowid
-            self.cursor.execute(f"CREATE TABLE exercise_{last_row_id} (date int);")
+        pass
 
     def get_table_names(self):
         with self.connection:
@@ -56,9 +54,9 @@ class Database:
 
     def get_exercise_names(self):
         with self.connection:
-            self.cursor.execute("SELECT name FROM exercises;")
-            raw_exercise_tuples = self.cursor.fetchall()
+            self.cursor.execute("SELECT name FROM exercise;")
+            raw_exercise_names_tuple = self.cursor.fetchall()
         exercise_names = []
-        for raw_exercise_tuple in raw_exercise_tuples:
-            exercise_names.append(raw_exercise_tuple[0])
+        for raw_tuple in raw_exercise_names_tuple:
+            exercise_names.append(raw_tuple[0])
         return exercise_names
