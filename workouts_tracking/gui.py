@@ -51,7 +51,7 @@ class MainWindow(QMainWindow):
         self.installation_path = INSTALL_DIR
         self.widget_main = MainWidget(self)
         self.setCentralWidget(self.widget_main)
-        self.logo = QIcon(self.installation_path + "/graphics/WT-Logo.svg")
+        self.logo = QIcon(str(self.installation_path / "graphics" / "WT-Logo.svg"))
         self.setWindowIcon(self.logo)
         self.setWindowTitle(APPLICATION_NAME)
 
