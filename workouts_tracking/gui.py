@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent, QIcon
 
-from .constants import APPLICATION_NAME
+from .constants import APPLICATION_NAME, INSTALL_DIR
 from .database import Database
 from .exercise import Exercise
 
@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
         self.database_path = None
         self.database = None
 
-        self.installation_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.installation_path = INSTALL_DIR
         self.widget_main = MainWidget(self)
         self.setCentralWidget(self.widget_main)
         self.logo = QIcon(self.installation_path + "/graphics/WT-Logo.svg")
