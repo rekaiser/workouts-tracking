@@ -5,6 +5,17 @@ INSTALL_DIR = Path(__file__).resolve().parent.parent
 TESTS_DIR = INSTALL_DIR / "tests"
 CODE_DIR = INSTALL_DIR / "workouts_tracking"
 
+DATABASE_MEASURE_TYPE = "measure_type"
+DATABASE_WORKOUT = "workout"
+DATABASE_CATEGORY = "category"
+DATABASE_DIFFICULTY = "difficulty"
+DATABASE_EXERCISE = "exercise"
+DATABASE_MUSCLE_GROUP = "muscle_group"
+DATABASE_EXERCISE_MUSCLE_GROUP = "exercise_muscle_group"
+DATABASE_EXE_EXERCISE = "exe_exercise"
+DATABASE_PERFORMANCE = "performance"
+DATABASE_MEASURE = "measure"
+
 DATABASE_MEASURE_TYPE_COLUMNS = (
     "id",
     "name",
@@ -71,102 +82,104 @@ DATABASE_PERFORMANCE_COLUMNS = (
 )
 
 DATABASE_TABLE_COLUMNS = {
-    "measure_type": DATABASE_MEASURE_TYPE_COLUMNS,
-    "category": DATABASE_CATEGORY_COLUMNS,
-    "difficulty": DATABASE_DIFFICULTY_COLUMNS,
-    "muscle_group": DATABASE_MUSCLE_GROUP_COLUMNS,
-    "workout": DATABASE_WORKOUT_COLUMNS,
-    "exercise": DATABASE_EXERCISE_COLUMNS,
-    "exercise_muscle_group": DATABASE_EXERCISE_MUSCLE_GROUP_COLUMNS,
-    "exe_exercise": DATABASE_EXE_EXERCISE_COLUMNS,
-    "measure": DATABASE_MEASURE_COLUMNS,
-    "performance": DATABASE_PERFORMANCE_COLUMNS,
+    DATABASE_MEASURE_TYPE: DATABASE_MEASURE_TYPE_COLUMNS,
+    DATABASE_CATEGORY: DATABASE_CATEGORY_COLUMNS,
+    DATABASE_DIFFICULTY: DATABASE_DIFFICULTY_COLUMNS,
+    DATABASE_MUSCLE_GROUP: DATABASE_MUSCLE_GROUP_COLUMNS,
+    DATABASE_WORKOUT: DATABASE_WORKOUT_COLUMNS,
+    DATABASE_EXERCISE: DATABASE_EXERCISE_COLUMNS,
+    DATABASE_EXERCISE_MUSCLE_GROUP: DATABASE_EXERCISE_MUSCLE_GROUP_COLUMNS,
+    DATABASE_EXE_EXERCISE: DATABASE_EXE_EXERCISE_COLUMNS,
+    DATABASE_MEASURE: DATABASE_MEASURE_COLUMNS,
+    DATABASE_PERFORMANCE: DATABASE_PERFORMANCE_COLUMNS,
 }
 
 DATABASE_TABLES_DICTIONARY = {
     # dictionary of the name of the tables and its specification for sqlite3
     # ("name": ["column_name type", "primary key (id)"])
-    "measure_type": [f"{DATABASE_MEASURE_TYPE_COLUMNS[0]} integer not null",
-                     f"{DATABASE_MEASURE_TYPE_COLUMNS[1]} text",
-                     f"{DATABASE_MEASURE_TYPE_COLUMNS[2]} text",
-                     f"primary key ({DATABASE_MEASURE_TYPE_COLUMNS[0]})",
-                     ],
-    "category": [f"{DATABASE_CATEGORY_COLUMNS[0]} integer not null",
-                 f"{DATABASE_CATEGORY_COLUMNS[1]} text",
-                 f"primary key ({DATABASE_CATEGORY_COLUMNS[0]})",
-                 ],
-    "difficulty": [f"{DATABASE_DIFFICULTY_COLUMNS[0]} integer not null",
-                   f"{DATABASE_DIFFICULTY_COLUMNS[1]} text",
-                   f"primary key ({DATABASE_DIFFICULTY_COLUMNS[0]})",
-                   ],
-    "workout": [f"{DATABASE_WORKOUT_COLUMNS[0]} integer not null",
-                f"{DATABASE_WORKOUT_COLUMNS[1]} text",
-                f"{DATABASE_WORKOUT_COLUMNS[2]} text",
-                f"{DATABASE_WORKOUT_COLUMNS[3]} text",
-                f"{DATABASE_WORKOUT_COLUMNS[4]} text",
-                f"primary key ({DATABASE_WORKOUT_COLUMNS[0]})",
-                ],
-    "exercise": [f"{DATABASE_EXERCISE_COLUMNS[0]} integer not null",
-                 f"{DATABASE_EXERCISE_COLUMNS[1]} text",
-                 f"{DATABASE_EXERCISE_COLUMNS[2]} text",
-                 f"{DATABASE_EXERCISE_COLUMNS[3]} text",
-                 f"{DATABASE_EXERCISE_COLUMNS[4]} integer",
-                 f"{DATABASE_EXERCISE_COLUMNS[5]} integer",
-                 f"primary key ({DATABASE_EXERCISE_COLUMNS[0]})",
-                 f"foreign key ({DATABASE_EXERCISE_COLUMNS[4]}) "
-                 f"references category({DATABASE_CATEGORY_COLUMNS[0]})",
-                 f"foreign key ({DATABASE_EXERCISE_COLUMNS[5]}) "
-                 f"references difficulty({DATABASE_CATEGORY_COLUMNS[0]})",
-                 ],
-    "muscle_group": [f"{DATABASE_MUSCLE_GROUP_COLUMNS[0]} integer not null",
-                     f"{DATABASE_MUSCLE_GROUP_COLUMNS[1]} text",
-                     f"primary key ({DATABASE_MUSCLE_GROUP_COLUMNS[0]})",
-                     ],
-    "exercise_muscle_group": [f"{DATABASE_EXERCISE_MUSCLE_GROUP_COLUMNS[0]} integer not null",
-                              f"{DATABASE_EXERCISE_MUSCLE_GROUP_COLUMNS[1]} integer not null",
-                              f"primary key ({DATABASE_EXERCISE_MUSCLE_GROUP_COLUMNS[0]}, "
-                              f"{DATABASE_EXERCISE_MUSCLE_GROUP_COLUMNS[1]})",
-                              f"foreign key ({DATABASE_EXERCISE_MUSCLE_GROUP_COLUMNS[0]}) "
-                              f"references exercise({DATABASE_EXERCISE_COLUMNS[0]})",
-                              f"foreign key ({DATABASE_EXERCISE_MUSCLE_GROUP_COLUMNS[1]}) "
-                              f"references muscle_group({DATABASE_MUSCLE_GROUP_COLUMNS[0]})",
-                              ],
-    "exe_exercise": [f"{DATABASE_EXE_EXERCISE_COLUMNS[0]} integer not null",
-                     f"{DATABASE_EXE_EXERCISE_COLUMNS[1]} integer not null",
-                     f"{DATABASE_EXE_EXERCISE_COLUMNS[2]} integer",
-                     f"{DATABASE_EXE_EXERCISE_COLUMNS[3]} text",
-                     f"primary key ({DATABASE_EXE_EXERCISE_COLUMNS[0]}, "
-                     f"{DATABASE_EXE_EXERCISE_COLUMNS[1]})",
-                     f"foreign key ({DATABASE_EXE_EXERCISE_COLUMNS[0]}) "
-                     f"references workout({DATABASE_WORKOUT_COLUMNS[0]})",
-                     f"foreign key ({DATABASE_EXE_EXERCISE_COLUMNS[2]}) "
-                     f"references exercise({DATABASE_EXERCISE_COLUMNS[0]})",
-                     ],
-    "measure": [f"{DATABASE_MEASURE_COLUMNS[0]} integer not null",
-                f"{DATABASE_MEASURE_COLUMNS[1]} text",
-                f"{DATABASE_MEASURE_COLUMNS[2]} integer",
-                f"{DATABASE_MEASURE_COLUMNS[3]} integer "
-                f"check ({DATABASE_MEASURE_COLUMNS[3]} = 0 or {DATABASE_MEASURE_COLUMNS[3]} = 1)",
-                f"{DATABASE_MEASURE_COLUMNS[4]} integer",
-                f"primary key ({DATABASE_MEASURE_COLUMNS[0]})",
-                f"foreign key ({DATABASE_MEASURE_COLUMNS[2]}) "
-                f"references measure_type({DATABASE_MEASURE_TYPE_COLUMNS[0]})",
-                f"foreign key ({DATABASE_MEASURE_COLUMNS[4]}) "
-                f"references exercise({DATABASE_EXERCISE_COLUMNS[0]})",
-                ],
-    "performance": [f"{DATABASE_PERFORMANCE_COLUMNS[0]} integer not null",
-                    f"{DATABASE_PERFORMANCE_COLUMNS[1]} integer not null",
-                    f"{DATABASE_PERFORMANCE_COLUMNS[2]} integer not null",
-                    f"{DATABASE_PERFORMANCE_COLUMNS[3]} text",
-                    f"primary key ({DATABASE_PERFORMANCE_COLUMNS[0]}, "
-                    f"{DATABASE_PERFORMANCE_COLUMNS[1]}, {DATABASE_PERFORMANCE_COLUMNS[2]})",
-                    f"foreign key ({DATABASE_PERFORMANCE_COLUMNS[0]}) "
-                    f"references workout({DATABASE_WORKOUT_COLUMNS[0]})",
-                    f"foreign key ({DATABASE_PERFORMANCE_COLUMNS[1]}) "
-                    f"references exe_exercise({DATABASE_EXE_EXERCISE_COLUMNS[1]})",
-                    f"foreign key ({DATABASE_PERFORMANCE_COLUMNS[2]}) "
-                    f"references measure({DATABASE_MEASURE_COLUMNS[0]})",
-                    ],
+    DATABASE_MEASURE_TYPE: [f"{DATABASE_MEASURE_TYPE_COLUMNS[0]} integer not null",
+                            f"{DATABASE_MEASURE_TYPE_COLUMNS[1]} text",
+                            f"{DATABASE_MEASURE_TYPE_COLUMNS[2]} text",
+                            f"primary key ({DATABASE_MEASURE_TYPE_COLUMNS[0]})",
+                            ],
+    DATABASE_CATEGORY: [f"{DATABASE_CATEGORY_COLUMNS[0]} integer not null",
+                        f"{DATABASE_CATEGORY_COLUMNS[1]} text",
+                        f"primary key ({DATABASE_CATEGORY_COLUMNS[0]})",
+                        ],
+    DATABASE_DIFFICULTY: [f"{DATABASE_DIFFICULTY_COLUMNS[0]} integer not null",
+                          f"{DATABASE_DIFFICULTY_COLUMNS[1]} text",
+                          f"primary key ({DATABASE_DIFFICULTY_COLUMNS[0]})",
+                          ],
+    DATABASE_WORKOUT: [f"{DATABASE_WORKOUT_COLUMNS[0]} integer not null",
+                       f"{DATABASE_WORKOUT_COLUMNS[1]} text",
+                       f"{DATABASE_WORKOUT_COLUMNS[2]} text",
+                       f"{DATABASE_WORKOUT_COLUMNS[3]} text",
+                       f"{DATABASE_WORKOUT_COLUMNS[4]} text",
+                       f"primary key ({DATABASE_WORKOUT_COLUMNS[0]})",
+                       ],
+    DATABASE_EXERCISE: [f"{DATABASE_EXERCISE_COLUMNS[0]} integer not null",
+                        f"{DATABASE_EXERCISE_COLUMNS[1]} text",
+                        f"{DATABASE_EXERCISE_COLUMNS[2]} text",
+                        f"{DATABASE_EXERCISE_COLUMNS[3]} text",
+                        f"{DATABASE_EXERCISE_COLUMNS[4]} integer",
+                        f"{DATABASE_EXERCISE_COLUMNS[5]} integer",
+                        f"primary key ({DATABASE_EXERCISE_COLUMNS[0]})",
+                        f"foreign key ({DATABASE_EXERCISE_COLUMNS[4]}) "
+                        f"references {DATABASE_CATEGORY}({DATABASE_CATEGORY_COLUMNS[0]})",
+                        f"foreign key ({DATABASE_EXERCISE_COLUMNS[5]}) "
+                        f"references {DATABASE_DIFFICULTY}({DATABASE_CATEGORY_COLUMNS[0]})",
+                        ],
+    DATABASE_MUSCLE_GROUP: [f"{DATABASE_MUSCLE_GROUP_COLUMNS[0]} integer not null",
+                            f"{DATABASE_MUSCLE_GROUP_COLUMNS[1]} text",
+                            f"primary key ({DATABASE_MUSCLE_GROUP_COLUMNS[0]})",
+                            ],
+    DATABASE_EXERCISE_MUSCLE_GROUP: [
+        f"{DATABASE_EXERCISE_MUSCLE_GROUP_COLUMNS[0]} integer not null",
+        f"{DATABASE_EXERCISE_MUSCLE_GROUP_COLUMNS[1]} integer not null",
+        f"primary key ({DATABASE_EXERCISE_MUSCLE_GROUP_COLUMNS[0]}, "
+        f"{DATABASE_EXERCISE_MUSCLE_GROUP_COLUMNS[1]})",
+        f"foreign key ({DATABASE_EXERCISE_MUSCLE_GROUP_COLUMNS[0]}) "
+        f"references {DATABASE_EXERCISE}({DATABASE_EXERCISE_COLUMNS[0]})",
+        f"foreign key ({DATABASE_EXERCISE_MUSCLE_GROUP_COLUMNS[1]}) "
+        f"references {DATABASE_MUSCLE_GROUP}({DATABASE_MUSCLE_GROUP_COLUMNS[0]})",
+        ],
+    DATABASE_EXE_EXERCISE: [f"{DATABASE_EXE_EXERCISE_COLUMNS[0]} integer not null",
+                            f"{DATABASE_EXE_EXERCISE_COLUMNS[1]} integer not null",
+                            f"{DATABASE_EXE_EXERCISE_COLUMNS[2]} integer",
+                            f"{DATABASE_EXE_EXERCISE_COLUMNS[3]} text",
+                            f"primary key ({DATABASE_EXE_EXERCISE_COLUMNS[0]}, "
+                            f"{DATABASE_EXE_EXERCISE_COLUMNS[1]})",
+                            f"foreign key ({DATABASE_EXE_EXERCISE_COLUMNS[0]}) "
+                            f"references {DATABASE_WORKOUT}({DATABASE_WORKOUT_COLUMNS[0]})",
+                            f"foreign key ({DATABASE_EXE_EXERCISE_COLUMNS[2]}) "
+                            f"references {DATABASE_EXERCISE}({DATABASE_EXERCISE_COLUMNS[0]})",
+                            ],
+    DATABASE_MEASURE: [f"{DATABASE_MEASURE_COLUMNS[0]} integer not null",
+                       f"{DATABASE_MEASURE_COLUMNS[1]} text",
+                       f"{DATABASE_MEASURE_COLUMNS[2]} integer",
+                       f"{DATABASE_MEASURE_COLUMNS[3]} integer "
+                       f"check ({DATABASE_MEASURE_COLUMNS[3]} = 0 or "
+                       f"{DATABASE_MEASURE_COLUMNS[3]} = 1)",
+                       f"{DATABASE_MEASURE_COLUMNS[4]} integer",
+                       f"primary key ({DATABASE_MEASURE_COLUMNS[0]})",
+                       f"foreign key ({DATABASE_MEASURE_COLUMNS[2]}) "
+                       f"references {DATABASE_MEASURE_TYPE}({DATABASE_MEASURE_TYPE_COLUMNS[0]})",
+                       f"foreign key ({DATABASE_MEASURE_COLUMNS[4]}) "
+                       f"references {DATABASE_EXERCISE}({DATABASE_EXERCISE_COLUMNS[0]})",
+                       ],
+    DATABASE_PERFORMANCE: [f"{DATABASE_PERFORMANCE_COLUMNS[0]} integer not null",
+                           f"{DATABASE_PERFORMANCE_COLUMNS[1]} integer not null",
+                           f"{DATABASE_PERFORMANCE_COLUMNS[2]} integer not null",
+                           f"{DATABASE_PERFORMANCE_COLUMNS[3]} text",
+                           f"primary key ({DATABASE_PERFORMANCE_COLUMNS[0]}, "
+                           f"{DATABASE_PERFORMANCE_COLUMNS[1]}, {DATABASE_PERFORMANCE_COLUMNS[2]})",
+                           f"foreign key ({DATABASE_PERFORMANCE_COLUMNS[0]}) "
+                           f"references {DATABASE_WORKOUT}({DATABASE_WORKOUT_COLUMNS[0]})",
+                           f"foreign key ({DATABASE_PERFORMANCE_COLUMNS[1]}) "
+                           f"references {DATABASE_EXE_EXERCISE}({DATABASE_EXE_EXERCISE_COLUMNS[1]})",
+                           f"foreign key ({DATABASE_PERFORMANCE_COLUMNS[2]}) "
+                           f"references {DATABASE_MEASURE}({DATABASE_MEASURE_COLUMNS[0]})",
+                           ],
 }
 
 DATABASE_MEASURE_TYPE_ENTRIES = [
@@ -210,14 +223,14 @@ DATABASE_MUSCLE_GROUP_ENTRIES = [
 ]
 
 DATABASE_TABLE_ENTRIES = {
-    "measure_type": DATABASE_MEASURE_TYPE_ENTRIES,
-    "category": DATABASE_CATEGORY_ENTRIES,
-    "difficulty": DATABASE_DIFFICULTY_ENTRIES,
-    "exercise": [],
-    "workout": [],
-    "muscle_group": DATABASE_MUSCLE_GROUP_ENTRIES,
-    "exercise_muscle_group": [],
-    "exe_exercise": [],
-    "performance": [],
-    "measure": [],
+    DATABASE_MEASURE_TYPE: DATABASE_MEASURE_TYPE_ENTRIES,
+    DATABASE_CATEGORY: DATABASE_CATEGORY_ENTRIES,
+    DATABASE_DIFFICULTY: DATABASE_DIFFICULTY_ENTRIES,
+    DATABASE_EXERCISE: [],
+    DATABASE_WORKOUT: [],
+    DATABASE_MUSCLE_GROUP: DATABASE_MUSCLE_GROUP_ENTRIES,
+    DATABASE_EXERCISE_MUSCLE_GROUP: [],
+    DATABASE_EXE_EXERCISE: [],
+    DATABASE_PERFORMANCE: [],
+    DATABASE_MEASURE: [],
 }
