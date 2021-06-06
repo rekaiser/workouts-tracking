@@ -1,10 +1,13 @@
+import shutil
 import sys
+import sqlite3 as sql
 
 import pytest
 
 from workouts_tracking.gui import create_app, create_and_show_main_window
 from workouts_tracking.database import Database
 from workouts_tracking.exercise import Exercise
+from workouts_tracking.constants import TESTS_DIR
 
 
 @pytest.fixture(scope="session")
@@ -61,3 +64,11 @@ def exercise_fixture():
 @pytest.fixture()
 def database_filename_fixture(tmp_path):
     yield tmp_path / "test_database.db"
+
+
+@pytest.fixture()
+def basic_database_fixture(tmp_path):
+    shutil.copy(TESTS_DIR / "database" / "basic_database.db", tmp_path / "basic_database.db")
+    connection = sql.connect(tmp_path / "basic_database.db")
+    cursor = connection.cursor()
+    yield connection, cursor
