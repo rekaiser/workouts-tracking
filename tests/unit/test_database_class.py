@@ -1,6 +1,7 @@
 import sqlite3 as sql
+import pytest
 
-from workouts_tracking.database import Database
+from workouts_tracking.database import Database, DatabaseError
 from workouts_tracking.constants import (DATABASE_EXERCISE_COLUMNS as EXERCISE_COLUMNS,
                                          DATABASE_EXERCISE_MUSCLE_GROUP_COLUMNS as
                                          EXERCISE_MUSCLE_GROUP_COLUMNS,
@@ -54,7 +55,7 @@ class TestBasicDatabase:
 
 
 class TestDifferentInitialDatabases:
-    def test_correct_database_with_initial_entries(self, tmp_path, basic_database_fixture):
+    def test_correct_database_with_initial_entries(self, basic_database_fixture):
         connection, cursor = basic_database_fixture
         exercise_records = [(1, "Test exercise", "some comment", "juo.de", 1, 1),
                             (2, "TRst Exercise", "", "juo.com", 2, 2),
@@ -90,6 +91,15 @@ class TestDifferentInitialDatabases:
             test_exercise_muscle_group_records = db.cursor.fetchall()
             for exercise_muscle_group_record in exercise_muscle_group_records:
                 assert exercise_muscle_group_record in test_exercise_muscle_group_records
+
+    def test_corrupt_database_is_not_loaded_missing_table(self, basic_database_fixture):
+        connection, cursor = basic_database_fixture
+        with connection:
+            cursor.execute(f"DROP TABLE {EXERCISE};")
+            cursor.execute("PRAGMA database_list;")
+            file_name = cursor.fetchone()[2]
+        with pytest.raises(DatabaseError):
+            Database(file_name)
 
 
 class TestDatabaseMethods:
