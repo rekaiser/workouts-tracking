@@ -48,7 +48,7 @@ DATABASE_WORKOUT_COLUMNS = (
 DATABASE_EXERCISE_COLUMNS = (
     "id",
     "name",
-    "command",
+    "comment",
     "url",
     "category_id",
     "difficulty_id",

@@ -4,6 +4,8 @@ from workouts_tracking.exercise import Exercise
 from workouts_tracking.constants import (DATABASE_TABLES_DICTIONARY, DATABASE_TABLE_ENTRIES,
                                          DATABASE_TABLE_COLUMNS,
                                          )
+from workouts_tracking.utils import (record_list_to_string, columns_list_to_string,
+                                     )
 
 
 class DatabaseError(Exception):
@@ -39,17 +41,11 @@ class Database:
     def initialize_tables(self):
         with self.connection:
             for table, columns in DATABASE_TABLES_DICTIONARY.items():
-                columns_string = ", ".join(columns)
-                self.cursor.execute(f"CREATE TABLE {table} ({columns_string});")
-                for entry in DATABASE_TABLE_ENTRIES[table]:
-                    columns_string = ", ".join(DATABASE_TABLE_COLUMNS[table])
-                    entry_string_list = []
-                    for value in entry:
-                        if isinstance(value, str):
-                            entry_string_list.append(f"'{value}'")
-                        else:
-                            entry_string_list.append(f"{value}")
-                    entry_string = ", ".join(entry_string_list)
+                create_columns_string = ", ".join(columns)
+                self.cursor.execute(f"CREATE TABLE {table} ({create_columns_string});")
+                for record in DATABASE_TABLE_ENTRIES[table]:
+                    columns_string = columns_list_to_string(DATABASE_TABLE_COLUMNS[table])
+                    entry_string = record_list_to_string(record)
                     self.cursor.execute(f"INSERT INTO {table} ({columns_string}) "
                                         f"values ({entry_string});")
 
