@@ -22,7 +22,10 @@ class Database:
         self.cursor = self.connection.cursor()
         self.open_connection = True
         if self.is_empty():
-            self.initialize_tables()
+            self.initialize_database()
+        elif not self.check_database_integrity():
+            raise DatabaseError(f"The loaded database (filename:{self.filename}) is corrupt."
+                                f"It does not fit to this program's specifications.")
 
     def is_empty(self):
         self.cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table';")
@@ -38,7 +41,7 @@ class Database:
         self.connection.close()
         self.open_connection = False
 
-    def initialize_tables(self):
+    def initialize_database(self):
         with self.connection:
             for table, columns in DATABASE_TABLES_DICTIONARY.items():
                 create_columns_string = ", ".join(columns)
@@ -48,6 +51,13 @@ class Database:
                     entry_string = record_list_to_string(record)
                     self.cursor.execute(f"INSERT INTO {table} ({columns_string}) "
                                         f"values ({entry_string});")
+
+    def check_database_integrity(self):
+        with self.connection:
+            for table_name in DATABASE_TABLES_DICTIONARY:
+                if table_name not in self.get_table_names():
+                    return False
+            return True
 
     def new_exercise(self, exercise: Exercise):
         pass
