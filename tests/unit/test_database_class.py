@@ -92,10 +92,19 @@ class TestDifferentInitialDatabases:
             for exercise_muscle_group_record in exercise_muscle_group_records:
                 assert exercise_muscle_group_record in test_exercise_muscle_group_records
 
-    def test_corrupt_database_is_not_loaded_missing_table(self, basic_database_fixture):
+    def test_corrupt_database_raises_error_missing_table(self, basic_database_fixture):
         connection, cursor = basic_database_fixture
         with connection:
             cursor.execute(f"DROP TABLE {EXERCISE};")
+            cursor.execute("PRAGMA database_list;")
+            file_name = cursor.fetchone()[2]
+        with pytest.raises(DatabaseError):
+            Database(file_name)
+
+    def test_corrupt_database_raises_error_wrong_column_name(self, basic_database_fixture):
+        connection, cursor = basic_database_fixture
+        with connection:
+            cursor.execute(f"ALTER TABLE {EXERCISE} RENAME COLUMN {EXERCISE_COLUMNS[2]} TO cmd;")
             cursor.execute("PRAGMA database_list;")
             file_name = cursor.fetchone()[2]
         with pytest.raises(DatabaseError):
