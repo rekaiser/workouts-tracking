@@ -57,6 +57,17 @@ class Database:
             for table_name in DATABASE_TABLES_DICTIONARY:
                 if table_name not in self.get_table_names():
                     return False
+                self.cursor.execute(f"PRAGMA table_info ({table_name});")
+                raw_columns = self.cursor.fetchall()
+                actual_table_columns = []
+                for raw_column in raw_columns:
+                    actual_table_columns.append(raw_column[1])
+                for column in DATABASE_TABLE_COLUMNS[table_name]:
+                    if column not in actual_table_columns:
+                        return False
+                for column in actual_table_columns:
+                    if column not in DATABASE_TABLE_COLUMNS[table_name]:
+                        return False
             return True
 
     def new_exercise(self, exercise: Exercise):
