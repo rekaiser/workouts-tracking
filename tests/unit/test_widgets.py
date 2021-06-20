@@ -349,12 +349,14 @@ class TestWindowNewExercise:
         wne.line_edit_url.setText("Some_url.de")
         wne.text_edit_comment.setPlainText("Some plain text")
         wne.group_box_muscle_groups.checkboxes[0].setChecked(True)
+        wne.table_measures.setRowCount(2)
         wne.close()
         assert wne.line_edit_name.text() == ""
         assert wne.line_edit_url.text() == ""
         assert wne.text_edit_comment.toPlainText() == ""
         for checkbox in wne.group_box_muscle_groups.checkboxes:
             assert not checkbox.isChecked()
+        assert wne.table_measures.rowCount() == 0
 
     def test_discard_button(self, main_window_fixture, database_filename_fixture):
         mwf = main_window_fixture
@@ -422,6 +424,18 @@ class TestWindowNewExercise:
         e = wne.create_exercise_from_input()
         assert isinstance(e, Exercise)
         assert e == Exercise("Test Name 3", "Test Plain Text", "url-to-test.de", 3, 2, [3, 8])
+
+    def test_delete_selected_measure(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        wne = mwf.window_new_exercise
+        wne.insert_measure_into_table(Measure("hihi", 2, True))
+        wne.insert_measure_into_table(Measure("hih", 3, False))
+        wne.table_measures.selectRow(0)
+        wne.button_delete_measure.click()
+        assert wne.table_measures.rowCount() == 1
+        assert wne.table_measures.item(0, 0).text() == "hih"
+        assert wne.measures[0] == Measure("hih", 3, False)
 
 
 class TestDatabaseFileDialogs:

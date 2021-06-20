@@ -355,7 +355,6 @@ class WindowAddMeasure(BasicWidget):
             self.line_edit_name.setStyleSheet("QLineEdit {background: rgb(255, 0, 0)}")
         else:
             measure = self.create_measure_from_input()
-            self.parent().measures.append(measure)
             self.close()
             self.parent().insert_measure_into_table(measure)
 
@@ -408,6 +407,7 @@ class WindowNewExercise(BasicWidget):
         self.layout().addWidget(self.measure_buttons)
         self.measure_buttons.setLayout(QHBoxLayout(self.measure_buttons))
         self.button_delete_measure = QPushButton("Delete Measure", self.measure_buttons)
+        self.button_delete_measure.clicked.connect(self.delete_measures_action)
         self.measure_buttons.layout().addWidget(self.button_delete_measure)
         self.button_add_measure = QPushButton("Add Measure", self.measure_buttons)
         self.measure_buttons.layout().addWidget(self.button_add_measure)
@@ -438,6 +438,8 @@ class WindowNewExercise(BasicWidget):
         self.text_edit_comment.setPlainText("")
         self.line_edit_url.setText("")
         self.group_box_muscle_groups.uncheck_checkboxes()
+        self.table_measures.setRowCount(0)
+        self.measures = []
         return super().closeEvent(event)
 
     def button_discard_action(self):
@@ -464,6 +466,7 @@ class WindowNewExercise(BasicWidget):
         return Exercise(name, comment, url, category_id, difficulty_id, muscle_group_ids)
 
     def insert_measure_into_table(self, measure):
+        self.measures.append(measure)
         row_count = self.table_measures.rowCount()
         self.table_measures.insertRow(row_count)
         self.table_measures.setItem(row_count, 0, QTableWidgetItem(measure.name))
@@ -471,6 +474,18 @@ class WindowNewExercise(BasicWidget):
         self.table_measures.setItem(row_count, 1, QTableWidgetItem(type_string))
         per_set_string = "yes" if measure.per_set else "no"
         self.table_measures.setItem(row_count, 2, QTableWidgetItem(per_set_string))
+
+    def delete_measures_action(self):
+        selection_model = self.table_measures.selectionModel()
+        selected_indexes = selection_model.selectedIndexes()
+        rows_to_delete = set()
+        for index in selected_indexes:
+            rows_to_delete.add(index.row())
+        rows_to_delete = list(rows_to_delete)
+        rows_to_delete.sort(reverse=True)
+        for row in rows_to_delete:
+            self.table_measures.removeRow(row)
+            del self.measures[row]
 
 
 class WidgetNewExerciseForm(BasicWidget):
