@@ -66,6 +66,7 @@ class MainWindow(QMainWindow):
             self.window_new_exercise.combobox_category,
             self.window_new_exercise.combobox_difficulty,
             self.window_new_exercise.group_box_muscle_groups,
+            self.window_new_exercise.window_add_measure.combobox_type,
         ]
 
     def new_exercise_action(self):
@@ -276,6 +277,26 @@ class ComboboxDifficulty(QComboBox, BasicWidget):
             self.addItems(difficulties)
 
 
+class ComboboxMeasureTypes(QComboBox, BasicWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        database = self.super_parent().database
+        if database:
+            measure_types = database.get_measure_types()
+            measure_types = [f"{measure_type[0]} ({measure_type[1]})"
+                             for measure_type in measure_types]
+            self.addItems(measure_types)
+
+    def update(self) -> None:
+        super().update()
+        database = self.super_parent().database
+        if database:
+            measure_types = database.get_measure_types()
+            measure_types = [f"{measure_type[0]} ({measure_type[1]})"
+                             for measure_type in measure_types]
+            self.addItems(measure_types)
+
+
 class WindowAddMeasure(BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
@@ -285,18 +306,23 @@ class WindowAddMeasure(BasicWidget):
         self.setWindowModality(Qt.WindowModal)
         self.setLayout(QFormLayout(self))
 
-        self.label_name = QLabel("Measure Name: swrrr", self)
+        self.label_name = QLabel("Measure Name:", self)
         self.line_edit_name = QLineEdit(self)
         self.layout().addRow(self.label_name, self.line_edit_name)
-        self.label_type = QLabel("Measure Type: sede", self)
-        self.combobox_type = QComboBox(self)
+        self.label_type = QLabel("Measure Type:", self)
+        self.combobox_type = ComboboxMeasureTypes(self)
         self.layout().addRow(self.label_type, self.combobox_type)
-        self.label_per_set = QLabel("Per Set: eewwe", self)
+        self.label_per_set = QLabel("Per Set:", self)
         self.checkbox_per_set = QCheckBox(self)
         self.layout().addRow(self.label_per_set, self.checkbox_per_set)
-        self.button_discard = QPushButton("Discard iuc ", self)
-        self.button_add = QPushButton("Add hjooouhzg", self)
+        self.button_discard = QPushButton("Discard", self)
+        self.button_add = QPushButton("Add", self)
         self.layout().addRow(self.button_discard, self.button_add)
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        self.line_edit_name.setText("")
+        self.checkbox_per_set.setChecked(False)
+        return super().closeEvent(event)
 
 
 class WindowNewExercise(BasicWidget):

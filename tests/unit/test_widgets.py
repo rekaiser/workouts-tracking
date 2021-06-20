@@ -8,13 +8,15 @@ from PySide6.QtGui import QIcon
 from workouts_tracking.gui import (HLineSunken, ComboboxCategory, GroupBoxDatabase, ComboboxMuscles,
                                    GroupBoxWorkout, GroupBoxExercise, GroupBoxAvailableExercises,
                                    ComboboxDifficulty, WindowNewExercise, GroupBoxMuscleGroups,
-                                   WindowAddMeasure,
+                                   WindowAddMeasure, ComboboxMeasureTypes,
                                    )
 
-from workouts_tracking.constants import (DATABASE_CATEGORY_ENTRIES,
-                                         DATABASE_DIFFICULTY_ENTRIES,
-                                         DATABASE_MUSCLE_GROUP_ENTRIES,
-                                         )
+from workouts_tracking.constants import (
+    DATABASE_CATEGORY_ENTRIES,
+    DATABASE_DIFFICULTY_ENTRIES,
+    DATABASE_MUSCLE_GROUP_ENTRIES,
+    DATABASE_MEASURE_TYPE_ENTRIES,
+)
 
 
 class TestMainProperties:
@@ -175,7 +177,7 @@ class TestWindowAddMeasure:
             (wam.label_name, QLabel),
             (wam.line_edit_name, QLineEdit),
             (wam.label_type, QLabel),
-            (wam.combobox_type, QComboBox),
+            (wam.combobox_type, ComboboxMeasureTypes),
             (wam.label_per_set, QLabel),
             (wam.checkbox_per_set, QCheckBox),
             (wam.button_discard, QPushButton),
@@ -184,6 +186,31 @@ class TestWindowAddMeasure:
         for i, (widget, widget_class) in enumerate(list_widgets_widget_classes):
             assert isinstance(widget, widget_class)
             assert isinstance(wam.layout().itemAt(i).widget(), widget_class)
+
+    def test_widgets(self, main_window_fixture, tmp_path):
+        main_window_fixture.new_database(tmp_path / "sample_database.db")
+        wam = main_window_fixture.window_new_exercise.window_add_measure
+        assert wam.label_name.text() == "Measure Name:"
+
+        assert wam.label_type.text() == "Measure Type:"
+        type_items = [wam.combobox_type.itemText(i) for i in range(wam.combobox_type.count())]
+        type_names = [f"{entry[1]} ({entry[2]})" for entry in DATABASE_MEASURE_TYPE_ENTRIES]
+        assert len(type_names) == len(type_items)
+        for item in type_items:
+            assert item in type_names
+
+        assert wam.label_per_set.text() == "Per Set:"
+
+        assert wam.button_discard.text() == "Discard"
+        assert wam.button_add.text() == "Add"
+
+    def test_close_window(self, main_window_fixture):
+        wam = main_window_fixture.window_new_exercise.window_add_measure
+        wam.line_edit_name.setText("Some Text name")
+        wam.checkbox_per_set.setChecked(True)
+        wam.close()
+        assert wam.line_edit_name.text() == ""
+        assert not wam.checkbox_per_set.isChecked()
 
 
 class TestWindowNewExercise:
