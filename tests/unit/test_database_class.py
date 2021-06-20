@@ -6,7 +6,8 @@ from workouts_tracking.constants import (DATABASE_EXERCISE_COLUMNS as EXERCISE_C
                                          DATABASE_EXERCISE_MUSCLE_GROUP_COLUMNS as
                                          EXERCISE_MUSCLE_GROUP_COLUMNS,
                                          DATABASE_EXERCISE_MUSCLE_GROUP as EXERCISE_MUSCLE_GROUP,
-                                         DATABASE_EXERCISE as EXERCISE)
+                                         DATABASE_EXERCISE as EXERCISE,
+                                         DATABASE_CATEGORY_ENTRIES as CATEGORY_ENTRIES)
 from workouts_tracking.utils import record_list_to_string, columns_list_to_string
 from workouts_tracking.exercise import Exercise
 
@@ -136,3 +137,9 @@ class TestDatabaseMethods:
         edf = empty_database_fixture
         edf.close_connection()
         assert not edf._open_connection
+
+    def test_get_categories(self, tmp_path):
+        database = Database(tmp_path / "test_database.db")
+        category_entries = [entry[1] for entry in CATEGORY_ENTRIES]
+        for category in category_entries:
+            assert category in database.get_categories()

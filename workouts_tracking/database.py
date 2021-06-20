@@ -3,7 +3,7 @@ import sqlite3 as sql
 from workouts_tracking.exercise import Exercise
 from workouts_tracking.constants import (DATABASE_TABLES_DICTIONARY, DATABASE_TABLE_ENTRIES,
                                          DATABASE_TABLE_COLUMNS, DATABASE_EXERCISE,
-                                         DATABASE_EXERCISE_COLUMNS,
+                                         DATABASE_EXERCISE_COLUMNS, DATABASE_CATEGORY,
                                          )
 from workouts_tracking.utils import (record_list_to_string, columns_list_to_string,
                                      )
@@ -118,3 +118,9 @@ class Database:
             return 0
         else:
             return max_id
+
+    def get_categories(self):
+        with self.connection:
+            self.cursor.execute(f"SELECT name FROM {DATABASE_CATEGORY};")
+            raw_categories = self.cursor.fetchall()
+        return [category[0] for category in raw_categories]
