@@ -139,3 +139,11 @@ class Database:
         with self.connection:
             self.cursor.execute(f"SELECT id, name, unit FROM {DATABASE_MEASURE_TYPE};")
             return self.cursor.fetchall()
+
+    def get_measure_type_for_id(self, measure_type_id: int):
+        with self.connection:
+            self.cursor.execute(f"SELECT id, name, unit "
+                                f"FROM {DATABASE_MEASURE_TYPE} "
+                                f"WHERE id = ?;",
+                                [measure_type_id])
+            return self.cursor.fetchone()

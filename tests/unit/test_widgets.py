@@ -222,8 +222,13 @@ class TestWindowAddMeasure:
         mwf.window_new_exercise.add_measure_action()
         assert wam.isVisible()
         wam.line_edit_name.setText("Test name")
+        wam.combobox_type.setCurrentIndex(4)
         wam.button_add.click()
         assert not wam.isVisible()
+        assert mwf.window_new_exercise.measures[0] == Measure("Test name", 5, False)
+        assert mwf.window_new_exercise.table_measures.item(0, 0).text() == "Test name"
+        assert mwf.window_new_exercise.table_measures.item(0, 1).text() == "sets (integer)"
+        assert mwf.window_new_exercise.table_measures.item(0, 2).text() == "no"
 
     def test_discard_button(self, main_window_fixture, database_filename_fixture):
         mwf = main_window_fixture

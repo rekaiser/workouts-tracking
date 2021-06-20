@@ -12,7 +12,7 @@ from PySide6.QtGui import QCloseEvent, QIcon
 from .constants import APPLICATION_NAME, INSTALL_DIR
 from .database import Database
 from .exercise import Exercise
-from.measure import Measure
+from .measure import Measure
 
 
 def create_app(sys_argv):
@@ -354,7 +354,10 @@ class WindowAddMeasure(BasicWidget):
         if self.line_edit_name.text() == "":
             self.line_edit_name.setStyleSheet("QLineEdit {background: rgb(255, 0, 0)}")
         else:
+            measure = self.create_measure_from_input()
+            self.parent().measures.append(measure)
             self.close()
+            self.parent().insert_measure_into_table(measure)
 
     def remove_style_sheet_line_edit_name(self):
         self.line_edit_name.setStyleSheet("")
@@ -374,6 +377,7 @@ class WindowNewExercise(BasicWidget):
         self.setWindowTitle("Add New Exercise")
         self.setWindowModality(Qt.WindowModal)
         self.setLayout(QVBoxLayout(self))
+        self.measures = []
 
         self.new_exercise_form = WidgetNewExerciseForm(self)
         self.layout().addWidget(self.new_exercise_form)
@@ -458,6 +462,15 @@ class WindowNewExercise(BasicWidget):
         difficulty_id = self.combobox_difficulty.get_id()
         muscle_group_ids = self.group_box_muscle_groups.get_ids()
         return Exercise(name, comment, url, category_id, difficulty_id, muscle_group_ids)
+
+    def insert_measure_into_table(self, measure):
+        row_count = self.table_measures.rowCount()
+        self.table_measures.insertRow(row_count)
+        self.table_measures.setItem(row_count, 0, QTableWidgetItem(measure.name))
+        type_string = measure.get_type_string(self.super_parent().database)
+        self.table_measures.setItem(row_count, 1, QTableWidgetItem(type_string))
+        per_set_string = "yes" if measure.per_set else "no"
+        self.table_measures.setItem(row_count, 2, QTableWidgetItem(per_set_string))
 
 
 class WidgetNewExerciseForm(BasicWidget):
