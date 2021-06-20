@@ -9,7 +9,8 @@ from workouts_tracking.constants import (DATABASE_EXERCISE_COLUMNS as EXERCISE_C
                                          DATABASE_EXERCISE as EXERCISE,
                                          DATABASE_CATEGORY_ENTRIES as CATEGORY_ENTRIES,
                                          DATABASE_DIFFICULTY_ENTRIES as DIFFICULTY_ENTRIES,
-                                         DATABASE_MUSCLE_GROUP_ENTRIES as MUSCLE_GROUP_ENTRIES,)
+                                         DATABASE_MUSCLE_GROUP_ENTRIES as MUSCLE_GROUP_ENTRIES,
+                                         DATABASE_MEASURE_TYPE_ENTRIES as MEASURE_TYPE_ENTRIES,)
 from workouts_tracking.utils import record_list_to_string, columns_list_to_string
 from workouts_tracking.exercise import Exercise
 
@@ -157,3 +158,9 @@ class TestDatabaseMethods:
         muscle_group_entries = [entry[1] for entry in MUSCLE_GROUP_ENTRIES]
         for muscle_group in muscle_group_entries:
             assert muscle_group in database.get_muscle_groups()
+
+    def test_get_measure_types(self, tmp_path):
+        database = Database(tmp_path / "test_database.db")
+        measure_type_entries = [(entry[1], entry[2]) for entry in MEASURE_TYPE_ENTRIES]
+        for measure_type in measure_type_entries:
+            assert measure_type in database.get_measure_types()

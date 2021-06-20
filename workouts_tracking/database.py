@@ -5,7 +5,7 @@ from workouts_tracking.constants import (DATABASE_TABLES_DICTIONARY, DATABASE_TA
                                          DATABASE_TABLE_COLUMNS, DATABASE_EXERCISE,
                                          DATABASE_EXERCISE_COLUMNS, DATABASE_CATEGORY,
                                          DATABASE_DIFFICULTY, DATABASE_MUSCLE_GROUP,
-                                         )
+                                         DATABASE_MEASURE_TYPE,)
 from workouts_tracking.utils import (record_list_to_string, columns_list_to_string,
                                      )
 
@@ -137,3 +137,8 @@ class Database:
             self.cursor.execute(f"SELECT name FROM {DATABASE_MUSCLE_GROUP};")
             raw_muscle_groups = self.cursor.fetchall()
             return [muscle_group[0] for muscle_group in raw_muscle_groups]
+
+    def get_measure_types(self):
+        with self.connection:
+            self.cursor.execute(f"SELECT name, unit FROM {DATABASE_MEASURE_TYPE};")
+            return self.cursor.fetchall()
