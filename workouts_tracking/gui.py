@@ -276,6 +276,29 @@ class ComboboxDifficulty(QComboBox, BasicWidget):
             self.addItems(difficulties)
 
 
+class WindowAddMeasure(BasicWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setWindowFlag(Qt.Window)
+        self.setWindowFlag(Qt.WindowStaysOnTopHint)
+        self.setWindowTitle("Add Measure")
+        self.setWindowModality(Qt.WindowModal)
+        self.setLayout(QFormLayout(self))
+
+        self.label_name = QLabel("Measure Name: swrrr", self)
+        self.line_edit_name = QLineEdit(self)
+        self.layout().addRow(self.label_name, self.line_edit_name)
+        self.label_type = QLabel("Measure Type: sede", self)
+        self.combobox_type = QComboBox(self)
+        self.layout().addRow(self.label_type, self.combobox_type)
+        self.label_per_set = QLabel("Per Set: eewwe", self)
+        self.checkbox_per_set = QCheckBox(self)
+        self.layout().addRow(self.label_per_set, self.checkbox_per_set)
+        self.button_discard = QPushButton("Discard iuc ", self)
+        self.button_add = QPushButton("Add hjooouhzg", self)
+        self.layout().addRow(self.button_discard, self.button_add)
+
+
 class WindowNewExercise(BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
@@ -285,7 +308,7 @@ class WindowNewExercise(BasicWidget):
         self.setWindowModality(Qt.WindowModal)
         self.setLayout(QVBoxLayout(self))
 
-        self.new_exercise_form = NewExerciseForm(self)
+        self.new_exercise_form = WidgetNewExerciseForm(self)
         self.layout().addWidget(self.new_exercise_form)
         self.new_exercise_form.setLayout(QFormLayout(self.new_exercise_form))
         self.label_name = QLabel("Exercise Name:", self.new_exercise_form)
@@ -308,8 +331,11 @@ class WindowNewExercise(BasicWidget):
         self.group_box_muscle_groups = GroupBoxMuscleGroups("Muscle Groups:", self)
         self.layout().addWidget(self.group_box_muscle_groups)
 
+        self.window_add_measure = WindowAddMeasure(self)
+
         self.button_add_measure = QPushButton("Add Measure", self)
         self.layout().addWidget(self.button_add_measure)
+        self.button_add_measure.clicked.connect(self.window_add_measure.show)
 
         self.table_measures = QTableWidget(0, 3, self)
         self.layout().addWidget(self.table_measures)
@@ -350,7 +376,7 @@ class WindowNewExercise(BasicWidget):
         self.line_edit_name.setStyleSheet("")
 
 
-class NewExerciseForm(BasicWidget):
+class WidgetNewExerciseForm(BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
 

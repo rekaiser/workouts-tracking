@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (QSplitter, QLayout, QHBoxLayout, QWidget, QVBoxLayout, QTableWidget,
                                QLabel, QPushButton, QGridLayout, QFormLayout, QLineEdit,
-                               QFileDialog, QPlainTextEdit, QCheckBox,
+                               QFileDialog, QPlainTextEdit, QCheckBox, QComboBox,
                                )
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon
@@ -8,6 +8,7 @@ from PySide6.QtGui import QIcon
 from workouts_tracking.gui import (HLineSunken, ComboboxCategory, GroupBoxDatabase, ComboboxMuscles,
                                    GroupBoxWorkout, GroupBoxExercise, GroupBoxAvailableExercises,
                                    ComboboxDifficulty, WindowNewExercise, GroupBoxMuscleGroups,
+                                   WindowAddMeasure,
                                    )
 
 from workouts_tracking.constants import (DATABASE_CATEGORY_ENTRIES,
@@ -158,6 +159,33 @@ class TestGuiLayout:
             assert isinstance(gaf.layout().itemAt(i).widget(), widget_class)
 
 
+class TestWindowAddMeasure:
+    def test_existence(self, main_window_fixture):
+        wne = main_window_fixture.window_new_exercise
+        assert isinstance(wne.window_add_measure, WindowAddMeasure)
+        assert wne.window_add_measure.windowTitle() == "Add Measure"
+        assert wne.window_add_measure.isModal()
+        assert bool(wne.windowFlags() & Qt.Window)
+        assert bool(wne.windowFlags() & Qt.WindowStaysOnTopHint)
+
+    def test_layout(self, main_window_fixture):
+        wam = main_window_fixture.window_new_exercise.window_add_measure
+        assert isinstance(wam.layout(), QFormLayout)
+        list_widgets_widget_classes = [
+            (wam.label_name, QLabel),
+            (wam.line_edit_name, QLineEdit),
+            (wam.label_type, QLabel),
+            (wam.combobox_type, QComboBox),
+            (wam.label_per_set, QLabel),
+            (wam.checkbox_per_set, QCheckBox),
+            (wam.button_discard, QPushButton),
+            (wam.button_add, QPushButton),
+        ]
+        for i, (widget, widget_class) in enumerate(list_widgets_widget_classes):
+            assert isinstance(widget, widget_class)
+            assert isinstance(wam.layout().itemAt(i).widget(), widget_class)
+
+
 class TestWindowNewExercise:
     def test_existence(self, main_window_fixture):
         wne = main_window_fixture.window_new_exercise
@@ -271,9 +299,8 @@ class TestWindowNewExercise:
         wne.button_discard.click()
         assert not wne.isVisible()
 
-    def test_add_button(self, main_window_fixture, database_filename_fixture):
+    def test_add_exercise_button(self, main_window_fixture, database_filename_fixture):
         mwf = main_window_fixture
-        mwf.close_database()
         mwf.new_database(database_filename_fixture)
         mwf.new_exercise_action()
         wne = mwf.window_new_exercise
@@ -306,6 +333,14 @@ class TestWindowNewExercise:
         assert wne.line_edit_name.styleSheet() == "QLineEdit {background: rgb(255, 0, 0)}"
         wne.line_edit_name.setText("1")
         assert wne.line_edit_name.styleSheet() == ""
+
+    def test_add_measure_action(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        wne = mwf.window_new_exercise
+        mwf.widget_main.widget_right.groupbox_exercise.button_new.click()
+        wne.button_add_measure.click()
+        assert wne.window_add_measure.isVisible()
 
 
 class TestDatabaseFileDialogs:
