@@ -213,6 +213,27 @@ class TestWindowAddMeasure:
         assert wam.line_edit_name.text() == ""
         assert not wam.checkbox_per_set.isChecked()
 
+    def test_add_measure_button(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        mwf.new_exercise_action()
+        wam = mwf.window_new_exercise.window_add_measure
+        mwf.window_new_exercise.add_measure_action()
+        assert wam.isVisible()
+        wam.line_edit_name.setText("Test name")
+        wam.button_add.click()
+        assert not wam.isVisible()
+
+    def test_discard_button(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        mwf.new_exercise_action()
+        wam = mwf.window_new_exercise.window_add_measure
+        mwf.window_new_exercise.add_measure_action()
+        assert wam.isVisible()
+        wam.button_discard.click()
+        assert not wam.isVisible()
+
 
 class TestWindowNewExercise:
     def test_existence(self, main_window_fixture):

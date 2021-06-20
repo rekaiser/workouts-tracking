@@ -324,6 +324,7 @@ class WindowAddMeasure(BasicWidget):
 
         self.label_name = QLabel("Measure Name:", self)
         self.line_edit_name = QLineEdit(self)
+        self.line_edit_name.textChanged.connect(self.remove_style_sheet_line_edit_name)
         self.layout().addRow(self.label_name, self.line_edit_name)
         self.label_type = QLabel("Measure Type:", self)
         self.combobox_type = ComboboxMeasureTypes(self)
@@ -332,13 +333,27 @@ class WindowAddMeasure(BasicWidget):
         self.checkbox_per_set = QCheckBox(self)
         self.layout().addRow(self.label_per_set, self.checkbox_per_set)
         self.button_discard = QPushButton("Discard", self)
+        self.button_discard.clicked.connect(self.button_discard_action)
         self.button_add = QPushButton("Add", self)
+        self.button_add.clicked.connect(self.button_add_measure_action)
         self.layout().addRow(self.button_discard, self.button_add)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         self.line_edit_name.setText("")
         self.checkbox_per_set.setChecked(False)
         return super().closeEvent(event)
+
+    def button_discard_action(self):
+        self.close()
+
+    def button_add_measure_action(self):
+        if self.line_edit_name.text() == "":
+            self.line_edit_name.setStyleSheet("QLineEdit {background: rgb(255, 0, 0)}")
+        else:
+            self.close()
+
+    def remove_style_sheet_line_edit_name(self):
+        self.line_edit_name.setStyleSheet("")
 
 
 class WindowNewExercise(BasicWidget):
@@ -382,7 +397,7 @@ class WindowNewExercise(BasicWidget):
         self.measure_buttons.layout().addWidget(self.button_delete_measure)
         self.button_add_measure = QPushButton("Add Measure", self.measure_buttons)
         self.measure_buttons.layout().addWidget(self.button_add_measure)
-        self.button_add_measure.clicked.connect(self.window_add_measure.show)
+        self.button_add_measure.clicked.connect(self.add_measure_action)
 
         self.table_measures = QTableWidget(0, 3, self)
         self.layout().addWidget(self.table_measures)
@@ -400,6 +415,9 @@ class WindowNewExercise(BasicWidget):
         self.button_add_exercise = QPushButton("Add Exercise", self.finish_buttons)
         self.finish_buttons.layout().addWidget(self.button_add_exercise)
         self.button_add_exercise.clicked.connect(self.button_add_exercise_action)
+
+    def add_measure_action(self):
+        self.window_add_measure.show()
 
     def closeEvent(self, event: QCloseEvent) -> None:
         self.line_edit_name.setText("")
