@@ -1,6 +1,13 @@
 import sqlite3 as sql
 
 from workouts_tracking.exercise import Exercise
+from workouts_tracking.constants import (DATABASE_TABLES_DICTIONARY, DATABASE_TABLE_ENTRIES,
+                                         DATABASE_TABLE_COLUMNS, DATABASE_EXERCISE,
+                                         DATABASE_EXERCISE_COLUMNS, DATABASE_CATEGORY,
+                                         DATABASE_DIFFICULTY, DATABASE_MUSCLE_GROUP,
+                                         DATABASE_MEASURE_TYPE,)
+from workouts_tracking.utils import (record_list_to_string, columns_list_to_string,
+                                     )
 
 
 class DatabaseError(Exception):
@@ -15,11 +22,14 @@ class Database:
         self.filename = filename
         self.connection = sql.connect(self.filename)
         self.cursor = self.connection.cursor()
-        self.open_connection = True
-        if self.is_empty():
-            self.initialize_tables()
+        self._open_connection = True
+        if self._is_empty():
+            self.initialize_database()
+        elif not self.check_database_integrity():
+            raise DatabaseError(f"The loaded database (filename:{self.filename}) is corrupt."
+                                f"It does not fit to this program's specifications.")
 
-    def is_empty(self):
+    def _is_empty(self):
         self.cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table';")
         tables = self.cursor.fetchall()
         if len(tables) == 0:
@@ -31,19 +41,48 @@ class Database:
         """Closes the connection in self.connection."""
         self.connection.commit()
         self.connection.close()
-        self.open_connection = False
+        self._open_connection = False
 
-    def initialize_tables(self):
+    def initialize_database(self):
         with self.connection:
-            columns_string = Exercise("", 0).create_columns_string()
-            self.cursor.execute(f"CREATE TABLE exercises ({columns_string});")
-            self.cursor.execute("CREATE TABLE workouts (name text, date int);")
+            for table, columns in DATABASE_TABLES_DICTIONARY.items():
+                create_columns_string = ", ".join(columns)
+                self.cursor.execute(f"CREATE TABLE {table} ({create_columns_string});")
+                for record in DATABASE_TABLE_ENTRIES[table]:
+                    columns_string = columns_list_to_string(DATABASE_TABLE_COLUMNS[table])
+                    entry_string = record_list_to_string(record)
+                    self.cursor.execute(f"INSERT INTO {table} ({columns_string}) "
+                                        f"values ({entry_string});")
+
+    def check_database_integrity(self):
+        with self.connection:
+            for table_name in DATABASE_TABLES_DICTIONARY:
+                if table_name not in self.get_table_names():
+                    return False
+                self.cursor.execute(f"PRAGMA table_info ({table_name});")
+                raw_columns = self.cursor.fetchall()
+                actual_table_columns = []
+                for raw_column in raw_columns:
+                    actual_table_columns.append(raw_column[1])
+                for column in DATABASE_TABLE_COLUMNS[table_name]:
+                    if column not in actual_table_columns:
+                        return False
+                for column in actual_table_columns:
+                    if column not in DATABASE_TABLE_COLUMNS[table_name]:
+                        return False
+            return True
 
     def new_exercise(self, exercise: Exercise):
+        max_id = self.get_max_id_from_table(DATABASE_EXERCISE)
+        exercise_id = max_id + 1
         with self.connection:
-            self.cursor.execute("INSERT INTO exercises VALUES (?, ?);", exercise.record())
-            last_row_id = self.cursor.lastrowid
-            self.cursor.execute(f"CREATE TABLE exercise_{last_row_id} (date int);")
+            columns = ", ".join(DATABASE_EXERCISE_COLUMNS)
+            values = exercise.values_for_exercise_table()
+            values = (exercise_id, *values)
+            place_holders = ("?," * len(DATABASE_EXERCISE_COLUMNS))[:-1]
+            self.cursor.execute(f"INSERT INTO {DATABASE_EXERCISE} ({columns}) "
+                                f"VALUES ({place_holders});", values)
+        return exercise_id
 
     def get_table_names(self):
         with self.connection:
@@ -56,9 +95,50 @@ class Database:
 
     def get_exercise_names(self):
         with self.connection:
-            self.cursor.execute("SELECT name FROM exercises;")
-            raw_exercise_tuples = self.cursor.fetchall()
+            self.cursor.execute("SELECT name FROM exercise;")
+            raw_exercise_names_tuple = self.cursor.fetchall()
         exercise_names = []
-        for raw_exercise_tuple in raw_exercise_tuples:
-            exercise_names.append(raw_exercise_tuple[0])
+        for raw_tuple in raw_exercise_names_tuple:
+            exercise_names.append(raw_tuple[0])
         return exercise_names
+
+    def get_column_names_for_table(self, table_name):
+        with self.connection:
+            self.cursor.execute(f"PRAGMA table_info ({table_name});")
+            raw_columns = self.cursor.fetchall()
+        column_names = []
+        for raw_column in raw_columns:
+            column_names.append(raw_column[1])
+        return column_names
+
+    def get_max_id_from_table(self, table_name):
+        with self.connection:
+            self.cursor.execute(f"SELECT MAX(id) FROM {table_name};")
+            max_id = self.cursor.fetchone()[0]
+        if max_id is None:
+            return 0
+        else:
+            return max_id
+
+    def get_categories(self):
+        with self.connection:
+            self.cursor.execute(f"SELECT name FROM {DATABASE_CATEGORY};")
+            raw_categories = self.cursor.fetchall()
+        return [category[0] for category in raw_categories]
+
+    def get_difficulties(self):
+        with self.connection:
+            self.cursor.execute(f"SELECT name FROM {DATABASE_DIFFICULTY};")
+            raw_difficulties = self.cursor.fetchall()
+        return [difficulty[0] for difficulty in raw_difficulties]
+
+    def get_muscle_groups(self):
+        with self.connection:
+            self.cursor.execute(f"SELECT name FROM {DATABASE_MUSCLE_GROUP};")
+            raw_muscle_groups = self.cursor.fetchall()
+            return [muscle_group[0] for muscle_group in raw_muscle_groups]
+
+    def get_measure_types(self):
+        with self.connection:
+            self.cursor.execute(f"SELECT name, unit FROM {DATABASE_MEASURE_TYPE};")
+            return self.cursor.fetchall()

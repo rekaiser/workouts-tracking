@@ -1,22 +1,16 @@
-import inspect
+from typing import List
 
 
 class Exercise:
-    def __init__(self, name: str, number_measures: int):
+    def __init__(self, name: str, comment: str, url: str, category_id: int, difficulty_id: int,
+                 muscle_group_ids: List[int], measure_ids: List[int]):
         self.name = name
-        self.number_measures = number_measures
+        self.comment = comment
+        self.url = url
+        self.category_id = category_id
+        self.difficulty_id = difficulty_id
+        self.muscle_group_ids = muscle_group_ids
+        self.measure_ids = measure_ids
 
-    def record(self):
-        return self.name, self.number_measures
-
-    def create_columns_string(self):
-        type_conversion_dict = {"str": "TEXT", "int": "INT", "float": "REAL"}
-        parameter_dict = inspect.signature(self.__init__).parameters
-        columns_string = ""
-        for parameter in parameter_dict:
-            columns_string += parameter
-            column_type = str(parameter_dict[parameter]).split(":")[1].strip()
-            columns_string += f" {type_conversion_dict[column_type]}, "
-        return columns_string[:-2]
-
-
+    def values_for_exercise_table(self):
+        return self.name, self.comment, self.url, self.category_id, self.difficulty_id
