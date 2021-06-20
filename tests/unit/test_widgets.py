@@ -18,6 +18,7 @@ from workouts_tracking.constants import (
     DATABASE_MEASURE_TYPE_ENTRIES,
 )
 from workouts_tracking.exercise import Exercise
+from workouts_tracking.measure import Measure
 
 
 class TestMainProperties:
@@ -233,6 +234,16 @@ class TestWindowAddMeasure:
         assert wam.isVisible()
         wam.button_discard.click()
         assert not wam.isVisible()
+
+    def test_create_measure_from_input(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        wam = mwf.window_new_exercise.window_add_measure
+        wam.line_edit_name.setText("Test measure")
+        wam.combobox_type.setCurrentIndex(3)
+        wam.checkbox_per_set.setChecked(True)
+        m = wam.create_measure_from_input()
+        assert m == Measure("Test measure", 4, True)
 
 
 class TestWindowNewExercise:

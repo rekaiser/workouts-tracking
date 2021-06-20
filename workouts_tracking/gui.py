@@ -12,6 +12,7 @@ from PySide6.QtGui import QCloseEvent, QIcon
 from .constants import APPLICATION_NAME, INSTALL_DIR
 from .database import Database
 from .exercise import Exercise
+from.measure import Measure
 
 
 def create_app(sys_argv):
@@ -312,6 +313,9 @@ class ComboboxMeasureTypes(QComboBox, BasicWidget):
                 self.addItem(f"{measure_type_name} ({measure_type_unit})")
                 self.index_id_dict[index] = measure_type_id
 
+    def get_id(self):
+        return self.index_id_dict[self.currentIndex()]
+
 
 class WindowAddMeasure(BasicWidget):
     def __init__(self, parent):
@@ -354,6 +358,12 @@ class WindowAddMeasure(BasicWidget):
 
     def remove_style_sheet_line_edit_name(self):
         self.line_edit_name.setStyleSheet("")
+
+    def create_measure_from_input(self):
+        name = self.line_edit_name.text()
+        type_id = self.combobox_type.get_id()
+        per_set = self.checkbox_per_set.isChecked()
+        return Measure(name, type_id, per_set)
 
 
 class WindowNewExercise(BasicWidget):

@@ -6,3 +6,11 @@ class Measure:
 
     def values_for_measure_table(self):
         return self.name, self.type_id, int(self.per_set)
+
+    def __eq__(self, other):
+        bool_list = [
+            self.name == other.name,
+            self.type_id == other.type_id,
+            self.per_set == other.per_set,
+        ]
+        return all(bool_list)
