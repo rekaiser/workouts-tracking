@@ -8,6 +8,7 @@ from workouts_tracking.constants import (DATABASE_EXERCISE_COLUMNS as EXERCISE_C
                                          DATABASE_EXERCISE_MUSCLE_GROUP as EXERCISE_MUSCLE_GROUP,
                                          DATABASE_EXERCISE as EXERCISE)
 from workouts_tracking.utils import record_list_to_string, columns_list_to_string
+from workouts_tracking.exercise import Exercise
 
 
 class TestBasicDatabase:
@@ -52,6 +53,18 @@ class TestBasicDatabase:
                 test_content = test_database.cursor.fetchall()
             for line in reference_content:
                 assert line in test_content
+
+    def test_new_exercise(self, tmp_path):
+        test_database = Database(tmp_path / "test_database.db")
+        test_exercise = Exercise("Test-Exercise", "Test comment", "Test Url", 1, 2, [1, 2],
+                                 [2, 3, 4])
+        exercise_id = test_database.new_exercise(test_exercise)
+        with test_database.connection:
+            columns = ", ".join(EXERCISE_COLUMNS)
+            test_database.cursor.execute(f"SELECT {columns} "
+                                         f"FROM {EXERCISE} WHERE id = {exercise_id};")
+            new_exercise_record = test_database.cursor.fetchone()
+        assert new_exercise_record[EXERCISE_COLUMNS.index("name")] == "Test-Exercise"
 
 
 class TestDifferentInitialDatabases:
@@ -122,4 +135,4 @@ class TestDatabaseMethods:
     def test_close_connection(self, empty_database_fixture):
         edf = empty_database_fixture
         edf.close_connection()
-        assert not edf.open_connection
+        assert not edf._open_connection

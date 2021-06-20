@@ -2,7 +2,8 @@ import sqlite3 as sql
 
 from workouts_tracking.exercise import Exercise
 from workouts_tracking.constants import (DATABASE_TABLES_DICTIONARY, DATABASE_TABLE_ENTRIES,
-                                         DATABASE_TABLE_COLUMNS,
+                                         DATABASE_TABLE_COLUMNS, DATABASE_EXERCISE,
+                                         DATABASE_EXERCISE_COLUMNS,
                                          )
 from workouts_tracking.utils import (record_list_to_string, columns_list_to_string,
                                      )
@@ -20,14 +21,14 @@ class Database:
         self.filename = filename
         self.connection = sql.connect(self.filename)
         self.cursor = self.connection.cursor()
-        self.open_connection = True
-        if self.is_empty():
+        self._open_connection = True
+        if self._is_empty():
             self.initialize_database()
         elif not self.check_database_integrity():
             raise DatabaseError(f"The loaded database (filename:{self.filename}) is corrupt."
                                 f"It does not fit to this program's specifications.")
 
-    def is_empty(self):
+    def _is_empty(self):
         self.cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table';")
         tables = self.cursor.fetchall()
         if len(tables) == 0:
@@ -39,7 +40,7 @@ class Database:
         """Closes the connection in self.connection."""
         self.connection.commit()
         self.connection.close()
-        self.open_connection = False
+        self._open_connection = False
 
     def initialize_database(self):
         with self.connection:
@@ -71,7 +72,16 @@ class Database:
             return True
 
     def new_exercise(self, exercise: Exercise):
-        pass
+        max_id = self.get_max_id_from_table(DATABASE_EXERCISE)
+        exercise_id = max_id + 1
+        with self.connection:
+            columns = ", ".join(DATABASE_EXERCISE_COLUMNS)
+            values = exercise.values_for_exercise_table()
+            values = (exercise_id, *values)
+            place_holders = ("?," * len(DATABASE_EXERCISE_COLUMNS))[:-1]
+            self.cursor.execute(f"INSERT INTO {DATABASE_EXERCISE} ({columns}) "
+                                f"VALUES ({place_holders});", values)
+        return exercise_id
 
     def get_table_names(self):
         with self.connection:
@@ -99,3 +109,12 @@ class Database:
         for raw_column in raw_columns:
             column_names.append(raw_column[1])
         return column_names
+
+    def get_max_id_from_table(self, table_name):
+        with self.connection:
+            self.cursor.execute(f"SELECT MAX(id) FROM {table_name};")
+            max_id = self.cursor.fetchone()[0]
+        if max_id is None:
+            return 0
+        else:
+            return max_id
