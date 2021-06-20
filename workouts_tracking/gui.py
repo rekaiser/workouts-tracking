@@ -2,15 +2,15 @@ import os
 
 from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout, QWidget,
                                QVBoxLayout, QTableWidget, QLabel, QFrame, QGroupBox, QComboBox,
-                               QPushButton, QGridLayout, QFormLayout, QLineEdit, QSpinBox,
-                               QFileDialog, QErrorMessage,
+                               QPushButton, QGridLayout, QFormLayout, QLineEdit,
+                               QFileDialog, QErrorMessage, QPlainTextEdit, QCheckBox,
+                               QTableWidgetItem,
                                )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent, QIcon
 
 from .constants import APPLICATION_NAME, INSTALL_DIR
 from .database import Database
-from .exercise import Exercise
 
 
 def create_app(sys_argv):
@@ -62,6 +62,11 @@ class MainWindow(QMainWindow):
         self.file_dialog_load_database = QFileDialog(self)
 
         self.error_message = QErrorMessage(self)
+        self.widgets_to_update = [
+            self.window_new_exercise.combobox_category,
+            self.window_new_exercise.combobox_difficulty,
+            self.window_new_exercise.group_box_muscle_groups,
+        ]
 
     def new_exercise_action(self):
         if self.database is None:
@@ -77,16 +82,19 @@ class MainWindow(QMainWindow):
             open(self.database_path, "w").close()
         self.database = Database(self.database_path)
         self.setWindowTitle(APPLICATION_NAME + " - " + str(os.path.basename(self.database_path)))
+        self.update_widgets()
 
     def load_database(self, database_path):
         self.database_path = database_path
         self.database = Database(self.database_path)
         self.setWindowTitle(APPLICATION_NAME + " - " + str(os.path.basename(self.database_path)))
+        self.update_widgets()
 
     def close_database(self):
         self.database_path = None
         self.database = None
         self.setWindowTitle(APPLICATION_NAME)
+        self.update_widgets()
 
     def new_database_action(self):
         database_path = self.file_dialog_new_database.getSaveFileName(self)[0]
@@ -102,6 +110,10 @@ class MainWindow(QMainWindow):
 
     def close_database_action(self):
         self.close_database()
+
+    def update_widgets(self):
+        for widget in self.widgets_to_update:
+            widget.update()
 
 
 class MainWidget(QSplitter, BasicWidget):
@@ -122,8 +134,8 @@ class LeftWidget(BasicWidget):
         self.layout().addWidget(self.label_workouts)
         self.table_workouts = QTableWidget(self)
         self.layout().addWidget(self.table_workouts)
-        self.frame_hline = HLineSunken(self)
-        self.layout().addWidget(self.frame_hline)
+        self.frame_h_line = HLineSunken(self)
+        self.layout().addWidget(self.frame_h_line)
         self.label_performed_exercises = QLabel("Performed Exercises: Double click a line in the "
                                                 "workouts table!", self)
         self.layout().addWidget(self.label_performed_exercises)
@@ -224,9 +236,18 @@ class GroupBoxAvailableExercises(QGroupBox, BasicWidget):
 class ComboboxCategory(QComboBox, BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        workout_categories = ["All Categories", "Strength Training", "Endurance Training",
-                              "Coordination Training"]
-        self.addItems(workout_categories)
+        database = self.super_parent().database
+        if database:
+            categories = database.get_categories()
+            self.addItems(categories)
+
+    def update(self) -> None:
+        super().update()
+        database = self.super_parent().database
+        self.clear()
+        if database:
+            categories = database.get_categories()
+            self.addItems(categories)
 
 
 class ComboboxMuscles(QComboBox, BasicWidget):
@@ -241,8 +262,18 @@ class ComboboxMuscles(QComboBox, BasicWidget):
 class ComboboxDifficulty(QComboBox, BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        difficulties = ["All Difficulties", "Very Hard", "Hard", "Medium", "Easy", "Very Easy"]
-        self.addItems(difficulties)
+        database = self.super_parent().database
+        if database:
+            categories = database.get_categories()
+            self.addItems(categories)
+
+    def update(self) -> None:
+        super().update()
+        database = self.super_parent().database
+        self.clear()
+        if database:
+            difficulties = database.get_difficulties()
+            self.addItems(difficulties)
 
 
 class WindowNewExercise(BasicWidget):
@@ -252,94 +283,76 @@ class WindowNewExercise(BasicWidget):
         self.setWindowFlag(Qt.WindowStaysOnTopHint)
         self.setWindowTitle("Add New Exercise")
         self.setWindowModality(Qt.WindowModal)
-        self.setLayout(QFormLayout())
+        self.setLayout(QVBoxLayout(self))
 
-        self.label_name = QLabel("Exercise Name:", self)
-        self.line_edit_name = QLineEdit(self)
+        self.new_exercise_form = NewExerciseForm(self)
+        self.layout().addWidget(self.new_exercise_form)
+        self.new_exercise_form.setLayout(QFormLayout(self.new_exercise_form))
+        self.label_name = QLabel("Exercise Name:", self.new_exercise_form)
+        self.line_edit_name = QLineEdit(self.new_exercise_form)
         self.line_edit_name.textChanged.connect(self.remove_style_sheet_line_edit_name)
-        self.layout().addRow(self.label_name, self.line_edit_name)
-        self.label_measures = QLabel("Number of Measures:", self)
-        self.spin_box_measures = QSpinBox(self)
-        self.min, self.max = 0, 5
-        self.spin_box_measures.setRange(self.min, self.max)
-        self.spin_box_measures.valueChanged.connect(self.change_visibility_measure_widgets)
-        self.layout().addRow(self.label_measures, self.spin_box_measures)
+        self.new_exercise_form.layout().addRow(self.label_name, self.line_edit_name)
+        self.label_comment = QLabel("Comment:", self.new_exercise_form)
+        self.text_edit_comment = QPlainTextEdit(self.new_exercise_form)
+        self.new_exercise_form.layout().addRow(self.label_comment, self.text_edit_comment)
+        self.label_url = QLabel("Url:", self.new_exercise_form)
+        self.line_edit_url = QLineEdit(self.new_exercise_form)
+        self.new_exercise_form.layout().addRow(self.label_url, self.line_edit_url)
+        self.label_category = QLabel("Category:", self.new_exercise_form)
+        self.combobox_category = ComboboxCategory(self.new_exercise_form)
+        self.new_exercise_form.layout().addRow(self.label_category, self.combobox_category)
+        self.label_difficulty = QLabel("Difficulty:", self.new_exercise_form)
+        self.combobox_difficulty = ComboboxDifficulty(self.new_exercise_form)
+        self.new_exercise_form.layout().addRow(self.label_difficulty, self.combobox_difficulty)
 
-        self.labels_measure_type = []
-        self.comboboxes_type = []
-        self.labels_measure_name = []
-        self.line_edits_measure_name = []
-        for i in range(self.min, self.max):
-            label_measure_type = QLabel(f"Type of Measure {i + 1}:", self)
-            self.labels_measure_type.append(label_measure_type)
-            line_edit_measure_name = QLineEdit(self)
-            combobox_type = ComboboxMeasureTypes(self, line_edit_measure_name)
-            self.comboboxes_type.append(combobox_type)
-            self.layout().addRow(label_measure_type, combobox_type)
-            combobox_type.hide()
-            label_measure_type.hide()
+        self.group_box_muscle_groups = GroupBoxMuscleGroups("Muscle Groups:", self)
+        self.layout().addWidget(self.group_box_muscle_groups)
 
-            label_measure_name = QLabel(f"Name of Measure {i + 1}:", self)
-            self.labels_measure_name.append(label_measure_name)
-            line_edit_measure_name.textChanged.connect(
-                self.remove_style_sheet_line_edits_measure_name)
-            self.line_edits_measure_name.append(line_edit_measure_name)
-            self.layout().addRow(label_measure_name, line_edit_measure_name)
-            label_measure_name.hide()
-            line_edit_measure_name.hide()
+        self.button_add_measure = QPushButton("Add Measure", self)
+        self.layout().addWidget(self.button_add_measure)
 
-        self.button_discard = QPushButton("Discard Exercise", self)
+        self.table_measures = QTableWidget(0, 3, self)
+        self.layout().addWidget(self.table_measures)
+        header_items = [QTableWidgetItem("measure name"), QTableWidgetItem("measure type"),
+                        QTableWidgetItem("per set")]
+        for i, header_item in enumerate(header_items):
+            self.table_measures.setHorizontalHeaderItem(i, header_item)
+
+        self.finish_buttons = QWidget(self)
+        self.layout().addWidget(self.finish_buttons)
+        self.finish_buttons.setLayout(QHBoxLayout(self.finish_buttons))
+        self.button_discard = QPushButton("Discard", self.finish_buttons)
+        self.finish_buttons.layout().addWidget(self.button_discard)
         self.button_discard.clicked.connect(self.button_discard_action)
-        self.button_add = QPushButton("Add Exercise", self)
-        self.button_add.clicked.connect(self.button_add_action)
-        self.layout().addRow(self.button_discard, self.button_add)
-
-    def change_visibility_measure_widgets(self):
-        number_measures = self.spin_box_measures.value()
-        for i in range(self.min, self.max):
-            if number_measures > i:
-                self.labels_measure_type[i].show()
-                self.comboboxes_type[i].show()
-                self.labels_measure_name[i].show()
-                self.line_edits_measure_name[i].show()
-            else:
-                self.labels_measure_type[i].hide()
-                self.comboboxes_type[i].hide()
-                self.labels_measure_name[i].hide()
-                self.line_edits_measure_name[i].hide()
+        self.button_add_exercise = QPushButton("Add Exercise", self.finish_buttons)
+        self.finish_buttons.layout().addWidget(self.button_add_exercise)
+        self.button_add_exercise.clicked.connect(self.button_add_exercise_action)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         self.line_edit_name.setText("")
-        self.spin_box_measures.setValue(0)
-        for line_edit in self.line_edits_measure_name:
-            line_edit.setText("")
+        self.text_edit_comment.setPlainText("")
+        self.line_edit_url.setText("")
+        self.group_box_muscle_groups.uncheck_checkboxes()
         return super().closeEvent(event)
 
     def button_discard_action(self):
         self.close()
 
-    def button_add_action(self):
+    def button_add_exercise_action(self):
         valid_text = True
         if self.line_edit_name.text() == "":
             self.line_edit_name.setStyleSheet("QLineEdit {background: rgb(255, 0, 0)}")
             valid_text = False
-        for i in range(self.spin_box_measures.value()):
-            if self.line_edits_measure_name[i].text() == "":
-                self.line_edits_measure_name[i].setStyleSheet("QLineEdit {background: "
-                                                              "rgb(255, 0, 0)}")
-                valid_text = False
         if valid_text:
-            e = Exercise(self.line_edit_name.text(), self.spin_box_measures.value())
-            self.super_parent().database.new_exercise(e)
             self.close()
 
     def remove_style_sheet_line_edit_name(self):
         self.line_edit_name.setStyleSheet("")
 
-    def remove_style_sheet_line_edits_measure_name(self):
-        for line_edit in self.line_edits_measure_name:
-            if not line_edit.text() == "":
-                line_edit.setStyleSheet("")
+
+class NewExerciseForm(BasicWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
 
 
 class ComboboxMeasureTypes(QComboBox, BasicWidget):
@@ -361,3 +374,33 @@ class ComboboxMeasureTypes(QComboBox, BasicWidget):
             "Weight per Set", "Distance", "Distance per Set", ""
         ]
         self.related_line_edit.setText(default_measure_names[index])
+
+
+class GroupBoxMuscleGroups(QGroupBox, BasicWidget):
+    def __init__(self, title, parent):
+        super().__init__(title, parent)
+        self.setLayout(QGridLayout(self))
+        self.number_columns = 3
+        database = self.super_parent().database
+        self.checkboxes = []
+        if database:
+            muscle_groups = database.get_muscle_groups()
+            for i, muscle_group in enumerate(muscle_groups):
+                checkbox = QCheckBox(muscle_group, self)
+                self.checkboxes.append(checkbox)
+                self.layout().addWidget(checkbox, i // 3, i % 3)
+
+    def update(self) -> None:
+        super().update()
+        database = self.super_parent().database
+        self.checkboxes = []
+        if database:
+            muscle_groups = database.get_muscle_groups()
+            for i, muscle_group in enumerate(muscle_groups):
+                checkbox = QCheckBox(muscle_group, self)
+                self.checkboxes.append(checkbox)
+                self.layout().addWidget(checkbox, i // 3, i % 3)
+
+    def uncheck_checkboxes(self):
+        for checkbox in self.checkboxes:
+            checkbox.setChecked(False)

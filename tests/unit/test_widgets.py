@@ -1,15 +1,19 @@
-import pytest
 from PySide6.QtWidgets import (QSplitter, QLayout, QHBoxLayout, QWidget, QVBoxLayout, QTableWidget,
-                               QLabel, QPushButton, QGridLayout, QFormLayout, QLineEdit, QSpinBox,
-                               QFileDialog,
+                               QLabel, QPushButton, QGridLayout, QFormLayout, QLineEdit,
+                               QFileDialog, QPlainTextEdit, QCheckBox,
                                )
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon
 
 from workouts_tracking.gui import (HLineSunken, ComboboxCategory, GroupBoxDatabase, ComboboxMuscles,
                                    GroupBoxWorkout, GroupBoxExercise, GroupBoxAvailableExercises,
-                                   ComboboxDifficulty, WindowNewExercise, ComboboxMeasureTypes
+                                   ComboboxDifficulty, WindowNewExercise, GroupBoxMuscleGroups,
                                    )
+
+from workouts_tracking.constants import (DATABASE_CATEGORY_ENTRIES,
+                                         DATABASE_DIFFICULTY_ENTRIES,
+                                         DATABASE_MUSCLE_GROUP_ENTRIES,
+                                         )
 
 
 class TestMainProperties:
@@ -41,7 +45,7 @@ class TestGuiLayout:
         list_widgets_widget_classes_left = [
             (cwf.widget_left.label_workouts, QLabel),
             (cwf.widget_left.table_workouts, QTableWidget),
-            (cwf.widget_left.frame_hline, HLineSunken),
+            (cwf.widget_left.frame_h_line, HLineSunken),
             (cwf.widget_left.label_performed_exercises, QLabel),
             (cwf.widget_left.table_performed_exercises, QTableWidget),
         ]
@@ -153,24 +157,6 @@ class TestGuiLayout:
             assert isinstance(widget, widget_class)
             assert isinstance(gaf.layout().itemAt(i).widget(), widget_class)
 
-    def test_comboboxes_exercises(self, groupbox_available_exercises_fixture):
-        gaf = groupbox_available_exercises_fixture
-        combobox_category_item_texts = ["All Categories", "Strength Training", "Endurance Training",
-                                        "Coordination Training"]
-        for i, item_text in enumerate(combobox_category_item_texts):
-            assert gaf.combobox_category.itemText(i) == item_text
-
-        combobox_muscles_item_texts = ["All muscles groups", "Chest", "Abdominal Muscles", "Neck",
-                                       "Upper Back", "Upper Arms", "Shoulders", "Forearms",
-                                       "Lower Back", "Gluteal Muscles", "Upper Legs", "Lower Legs"]
-        for i, item_text in enumerate(combobox_muscles_item_texts):
-            assert gaf.combobox_muscles.itemText(i) == item_text
-
-        combobox_difficulty_texts = ["All Difficulties", "Very Hard", "Hard", "Medium", "Easy",
-                                     "Very Easy"]
-        for i, item_text in enumerate(combobox_difficulty_texts):
-            assert gaf.combobox_difficulty.itemText(i) == item_text
-
 
 class TestWindowNewExercise:
     def test_existence(self, main_window_fixture):
@@ -181,73 +167,100 @@ class TestWindowNewExercise:
         assert bool(wne.windowFlags() & Qt.Window)
         assert bool(wne.windowFlags() & Qt.WindowStaysOnTopHint)
 
-    def test_layout(self, main_window_fixture):
+    def test_outer_layout(self, main_window_fixture):
         wne = main_window_fixture.window_new_exercise
-        assert isinstance(wne.layout(), QFormLayout)
+        assert isinstance(wne.layout(), QVBoxLayout)
         list_widgets_widget_classes = [
-            (wne.label_name, QLabel),
-            (wne.line_edit_name, QLineEdit),
-            (wne.label_measures, QLabel),
-            (wne.spin_box_measures, QSpinBox),
-            ]
-        for i in range(5):
-            list_widgets_widget_classes.append((wne.labels_measure_type[i], QLabel))
-            list_widgets_widget_classes.append((wne.comboboxes_type[i], ComboboxMeasureTypes))
-            list_widgets_widget_classes.append((wne.labels_measure_name[i], QLabel))
-            list_widgets_widget_classes.append((wne.line_edits_measure_name[i], QLineEdit))
-        list_widgets_widget_classes += [
-            (wne.button_discard, QPushButton),
-            (wne.button_add, QPushButton),
+            (wne.new_exercise_form, QWidget),
+            (wne.group_box_muscle_groups, GroupBoxMuscleGroups),
+            (wne.button_add_measure, QPushButton),
+            (wne.table_measures, QTableWidget),
+            (wne.finish_buttons, QWidget),
         ]
         for i, (widget, widget_class) in enumerate(list_widgets_widget_classes):
             assert isinstance(widget, widget_class)
             assert isinstance(wne.layout().itemAt(i).widget(), widget_class)
 
-    def test_widgets(self, main_window_fixture):
+    def test_inner_layout1(self, main_window_fixture):
+        wne = main_window_fixture.window_new_exercise
+        assert isinstance(wne.new_exercise_form.layout(), QFormLayout)
+        list_widgets_widget_classes = [
+            (wne.label_name, QLabel),
+            (wne.line_edit_name, QLineEdit),
+            (wne.label_comment, QLabel),
+            (wne.text_edit_comment, QPlainTextEdit),
+            (wne.label_url, QLabel),
+            (wne.line_edit_url, QLineEdit),
+            (wne.label_category, QLabel),
+            (wne.combobox_category, ComboboxCategory),
+            (wne.label_difficulty, QLabel),
+            (wne.combobox_difficulty, ComboboxDifficulty),
+        ]
+        for i, (widget, widget_class) in enumerate(list_widgets_widget_classes):
+            assert isinstance(widget, widget_class)
+            assert isinstance(wne.new_exercise_form.layout().itemAt(i).widget(), widget_class)
+
+    def test_inner_layout2(self, main_window_fixture):
+        wne = main_window_fixture.window_new_exercise
+        assert isinstance(wne.finish_buttons.layout(), QHBoxLayout)
+        list_widgets_widget_classes = [
+            (wne.button_discard, QPushButton),
+            (wne.button_add_exercise, QPushButton),
+        ]
+        for i, (widget, widget_class) in enumerate(list_widgets_widget_classes):
+            assert isinstance(widget, widget_class)
+            assert isinstance(wne.finish_buttons.layout().itemAt(i).widget(), widget_class)
+
+    def test_widgets(self, main_window_fixture, tmp_path):
+        main_window_fixture.new_database(tmp_path / "sample_database.db")
         wne = main_window_fixture.window_new_exercise
         assert wne.label_name.text() == "Exercise Name:"
-        assert wne.label_measures.text() == "Number of Measures:"
-        assert wne.spin_box_measures.minimum() == 0
-        assert wne.spin_box_measures.maximum() == 5
-        assert wne.button_add.text() == "Add Exercise"
-        assert wne.button_discard.text() == "Discard Exercise"
-        for i in range(5):
-            assert wne.labels_measure_type[i].text() == f"Type of Measure {i + 1}:"
-            assert wne.labels_measure_name[i].text() == f"Name of Measure {i + 1}:"
+        assert wne.label_comment.text() == "Comment:"
+        assert wne.label_url.text() == "Url:"
 
-    @pytest.mark.parametrize("value", [5, 1, 4, 0])
-    def test_spin_box_measures(self, main_window_fixture, database_filename_fixture, value):
-        main_window_fixture.new_database(database_filename_fixture)
-        main_window_fixture.widget_main.widget_right.groupbox_exercise.button_new.click()
-        wne = main_window_fixture.window_new_exercise
-        wne.spin_box_measures.setValue(value)
-        for i in range(5):
-            if value > i:
-                assert wne.labels_measure_type[i].isVisible()
-                assert wne.comboboxes_type[i].isVisible()
-                assert wne.labels_measure_name[i].isVisible()
-                assert wne.line_edits_measure_name[i].isVisible()
-            else:
-                assert not wne.labels_measure_type[i].isVisible()
-                assert not wne.comboboxes_type[i].isVisible()
-                assert not wne.labels_measure_name[i].isVisible()
-                assert not wne.line_edits_measure_name[i].isVisible()
+        assert wne.label_category.text() == "Category:"
+        category_items = [wne.combobox_category.itemText(i)
+                          for i in range(wne.combobox_category.count())]
+        category_names = [entry[1] for entry in DATABASE_CATEGORY_ENTRIES]
+        assert len(category_names) == len(category_items)
+        for item in category_items:
+            assert item in category_names
+
+        assert wne.label_difficulty.text() == "Difficulty:"
+        difficulty_items = [wne.combobox_difficulty.itemText(i)
+                            for i in range(wne.combobox_difficulty.count())]
+        difficulty_names = [entry[1] for entry in DATABASE_DIFFICULTY_ENTRIES]
+        assert len(difficulty_names) == len(difficulty_items)
+        for item in difficulty_items:
+            assert item in difficulty_names
+
+        assert wne.group_box_muscle_groups.title() == "Muscle Groups:"
+        assert isinstance(wne.group_box_muscle_groups.layout(), QGridLayout)
+        for i, entry in enumerate(DATABASE_MUSCLE_GROUP_ENTRIES):
+            assert isinstance(wne.group_box_muscle_groups.layout().itemAt(i).widget(), QCheckBox)
+            assert wne.group_box_muscle_groups.layout().itemAt(i).widget().text() == entry[1]
+
+        assert wne.button_add_measure.text() == "Add Measure"
+
+        header_names = ["measure name", "measure type", "per set"]
+        for i, header_name in enumerate(header_names):
+            assert wne.table_measures.horizontalHeaderItem(i).text() == header_name
+
+        assert wne.button_discard.text() == "Discard"
+        assert wne.button_add_exercise.text() == "Add Exercise"
 
     def test_close_window(self, main_window_fixture):
         wne = main_window_fixture.window_new_exercise
-        wne.spin_box_measures.setValue(5)
         wne.line_edit_name.setText("Some exercise")
-        wne.line_edits_measure_name[3].setText("Sets")
-        wne.line_edits_measure_name[4].setText("SIOMBD")
+        wne.line_edit_url.setText("Some_url.de")
+        wne.text_edit_comment.setPlainText("Some plain text")
+        wne.group_box_muscle_groups.checkboxes[0].setChecked(True)
         wne.close()
         assert wne.line_edit_name.text() == ""
-        assert wne.line_edits_measure_name[3].text() == ""
-        assert wne.line_edits_measure_name[4].text() == ""
-        for i in range(5):
-            assert not wne.labels_measure_type[i].isVisible()
-            assert not wne.comboboxes_type[i].isVisible()
-            assert not wne.labels_measure_name[i].isVisible()
-            assert not wne.line_edits_measure_name[i].isVisible()
+        assert wne.line_edit_url.text() == ""
+        assert wne.text_edit_comment.toPlainText() == ""
+        for checkbox in wne.group_box_muscle_groups.checkboxes:
+            assert not checkbox.isChecked()
 
     def test_discard_button(self, main_window_fixture, database_filename_fixture):
         mwf = main_window_fixture
@@ -266,7 +279,7 @@ class TestWindowNewExercise:
         wne = mwf.window_new_exercise
         assert wne.isVisible()
         wne.line_edit_name.setText("Test Name")
-        wne.button_add.click()
+        wne.button_add_exercise.click()
         assert not wne.isVisible()
 
     def test_new_exercise_without_database(self, main_window_fixture):
@@ -288,48 +301,11 @@ class TestWindowNewExercise:
         mwf.widget_main.widget_right.groupbox_exercise.button_new.click()
         assert wne.isVisible()
         assert wne.line_edit_name.text() == ""
-        wne.button_add.click()
+        wne.button_add_exercise.click()
         assert wne.isVisible()
         assert wne.line_edit_name.styleSheet() == "QLineEdit {background: rgb(255, 0, 0)}"
         wne.line_edit_name.setText("1")
         assert wne.line_edit_name.styleSheet() == ""
-
-    def test_add_exercise_without_measure_name(self, main_window_fixture,
-                                               database_filename_fixture):
-        mwf = main_window_fixture
-        mwf.new_database(database_filename_fixture)
-        wne = mwf.window_new_exercise
-        mwf.widget_main.widget_right.groupbox_exercise.button_new.click()
-        wne.line_edit_name.setText("Test Exercise")
-        assert wne.isVisible()
-        wne.spin_box_measures.setValue(1)
-        wne.button_add.click()
-        assert wne.isVisible()
-        assert wne.line_edits_measure_name[0].styleSheet() == "QLineEdit " \
-                                                              "{background: rgb(255, 0, 0)}"
-        wne.line_edits_measure_name[0].setText("Some name")
-        assert wne.line_edits_measure_name[0].styleSheet() == ""
-
-    def test_comboboxes(self, main_window_fixture, database_filename_fixture):
-        mwf = main_window_fixture
-        mwf.new_database(database_filename_fixture)
-        wne = mwf.window_new_exercise
-        measure_types = [
-            "number (integer)", "number (float)", "sets", "repetitions", "repetitions per set",
-            "time", "time per set", "weight", "weight per set", "distance (m)",
-            "distance per set (m)", "text"
-        ]
-        for j, combobox in enumerate(wne.comboboxes_type):
-            for i, measure_type in enumerate(measure_types):
-                assert combobox.itemText(i) == measure_type
-            assert combobox.related_line_edit is wne.line_edits_measure_name[j]
-        default_measure_names = [
-            "", "", "Sets", "Repetitions", "Repetitions per Set", "Time", "Time per Set", "Weight",
-            "Weight per Set", "Distance", "Distance per Set", ""
-        ]
-        for i, measure_name in enumerate(default_measure_names):
-            wne.comboboxes_type[1].setCurrentIndex(i)
-            assert wne.line_edits_measure_name[1].text() == measure_name
 
 
 class TestDatabaseFileDialogs:
