@@ -333,8 +333,13 @@ class WindowNewExercise(BasicWidget):
 
         self.window_add_measure = WindowAddMeasure(self)
 
-        self.button_add_measure = QPushButton("Add Measure", self)
-        self.layout().addWidget(self.button_add_measure)
+        self.measure_buttons = QWidget(self)
+        self.layout().addWidget(self.measure_buttons)
+        self.measure_buttons.setLayout(QHBoxLayout(self.measure_buttons))
+        self.button_delete_measure = QPushButton("Delete Measure", self.measure_buttons)
+        self.measure_buttons.layout().addWidget(self.button_delete_measure)
+        self.button_add_measure = QPushButton("Add Measure", self.measure_buttons)
+        self.measure_buttons.layout().addWidget(self.button_add_measure)
         self.button_add_measure.clicked.connect(self.window_add_measure.show)
 
         self.table_measures = QTableWidget(0, 3, self)

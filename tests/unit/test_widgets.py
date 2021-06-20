@@ -201,7 +201,7 @@ class TestWindowNewExercise:
         list_widgets_widget_classes = [
             (wne.new_exercise_form, QWidget),
             (wne.group_box_muscle_groups, GroupBoxMuscleGroups),
-            (wne.button_add_measure, QPushButton),
+            (wne.measure_buttons, QWidget),
             (wne.table_measures, QTableWidget),
             (wne.finish_buttons, QWidget),
         ]
@@ -269,6 +269,7 @@ class TestWindowNewExercise:
             assert wne.group_box_muscle_groups.layout().itemAt(i).widget().text() == entry[1]
 
         assert wne.button_add_measure.text() == "Add Measure"
+        assert wne.button_delete_measure.text() == "Delete Measure"
 
         header_names = ["measure name", "measure type", "per set"]
         for i, header_name in enumerate(header_names):
