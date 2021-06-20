@@ -7,7 +7,8 @@ from workouts_tracking.constants import (DATABASE_EXERCISE_COLUMNS as EXERCISE_C
                                          EXERCISE_MUSCLE_GROUP_COLUMNS,
                                          DATABASE_EXERCISE_MUSCLE_GROUP as EXERCISE_MUSCLE_GROUP,
                                          DATABASE_EXERCISE as EXERCISE,
-                                         DATABASE_CATEGORY_ENTRIES as CATEGORY_ENTRIES)
+                                         DATABASE_CATEGORY_ENTRIES as CATEGORY_ENTRIES,
+                                         DATABASE_DIFFICULTY_ENTRIES as DIFFICULTY_ENTRIES,)
 from workouts_tracking.utils import record_list_to_string, columns_list_to_string
 from workouts_tracking.exercise import Exercise
 
@@ -143,3 +144,9 @@ class TestDatabaseMethods:
         category_entries = [entry[1] for entry in CATEGORY_ENTRIES]
         for category in category_entries:
             assert category in database.get_categories()
+
+    def test_get_difficulties(self, tmp_path):
+        database = Database(tmp_path / "test_database.db")
+        difficulty_entries = [entry[1] for entry in DIFFICULTY_ENTRIES]
+        for difficulty in difficulty_entries:
+            assert difficulty in database.get_difficulties()
