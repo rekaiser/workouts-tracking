@@ -17,6 +17,7 @@ from workouts_tracking.constants import (
     DATABASE_MUSCLE_GROUP_ENTRIES,
     DATABASE_MEASURE_TYPE_ENTRIES,
 )
+from workouts_tracking.exercise import Exercise
 
 
 class TestMainProperties:
@@ -369,6 +370,21 @@ class TestWindowNewExercise:
         mwf.widget_main.widget_right.groupbox_exercise.button_new.click()
         wne.button_add_measure.click()
         assert wne.window_add_measure.isVisible()
+
+    def test_create_exercise_from_input(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        wne = mwf.window_new_exercise
+        wne.line_edit_name.setText("Test Name 3")
+        wne.text_edit_comment.setPlainText("Test Plain Text")
+        wne.line_edit_url.setText("url-to-test.de")
+        wne.combobox_category.setCurrentIndex(2)
+        wne.combobox_difficulty.setCurrentIndex(1)
+        wne.group_box_muscle_groups.checkboxes[2].setChecked(True)
+        wne.group_box_muscle_groups.checkboxes[7].setChecked(True)
+        e = wne.create_exercise_from_input()
+        assert isinstance(e, Exercise)
+        assert e == Exercise("Test Name 3", "Test Plain Text", "url-to-test.de", 3, 2, [3, 8])
 
 
 class TestDatabaseFileDialogs:

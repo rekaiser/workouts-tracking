@@ -11,6 +11,7 @@ from PySide6.QtGui import QCloseEvent, QIcon
 
 from .constants import APPLICATION_NAME, INSTALL_DIR
 from .database import Database
+from .exercise import Exercise
 
 
 def create_app(sys_argv):
@@ -237,18 +238,25 @@ class GroupBoxAvailableExercises(QGroupBox, BasicWidget):
 class ComboboxCategory(QComboBox, BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        database = self.super_parent().database
-        if database:
-            categories = database.get_categories()
-            self.addItems(categories)
+        self.index_id_dict = {}
+        self.add_items_from_database()
 
     def update(self) -> None:
         super().update()
-        database = self.super_parent().database
         self.clear()
+        self.index_id_dict = {}
+        self.add_items_from_database()
+
+    def add_items_from_database(self):
+        database = self.super_parent().database
         if database:
             categories = database.get_categories()
-            self.addItems(categories)
+            for index, (category_id, category) in enumerate(categories):
+                self.addItem(category)
+                self.index_id_dict[index] = category_id
+
+    def get_id(self):
+        return self.index_id_dict[self.currentIndex()]
 
 
 class ComboboxMuscles(QComboBox, BasicWidget):
@@ -263,38 +271,46 @@ class ComboboxMuscles(QComboBox, BasicWidget):
 class ComboboxDifficulty(QComboBox, BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        database = self.super_parent().database
-        if database:
-            categories = database.get_categories()
-            self.addItems(categories)
+        self.index_id_dict = {}
+        self.add_items_from_database()
 
     def update(self) -> None:
         super().update()
-        database = self.super_parent().database
         self.clear()
+        self.index_id_dict = {}
+        self.add_items_from_database()
+
+    def add_items_from_database(self):
+        database = self.super_parent().database
         if database:
             difficulties = database.get_difficulties()
-            self.addItems(difficulties)
+            for index, (difficulty_id, difficulty) in enumerate(difficulties):
+                self.addItem(difficulty)
+                self.index_id_dict[index] = difficulty_id
+
+    def get_id(self):
+        return self.index_id_dict[self.currentIndex()]
 
 
 class ComboboxMeasureTypes(QComboBox, BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        database = self.super_parent().database
-        if database:
-            measure_types = database.get_measure_types()
-            measure_types = [f"{measure_type[0]} ({measure_type[1]})"
-                             for measure_type in measure_types]
-            self.addItems(measure_types)
+        self.index_id_dict = {}
+        self.add_items_from_database()
 
     def update(self) -> None:
         super().update()
+        self.clear()
+        self.add_items_from_database()
+
+    def add_items_from_database(self):
         database = self.super_parent().database
         if database:
             measure_types = database.get_measure_types()
-            measure_types = [f"{measure_type[0]} ({measure_type[1]})"
-                             for measure_type in measure_types]
-            self.addItems(measure_types)
+            for index, (measure_type_id, measure_type_name, measure_type_unit) \
+                    in enumerate(measure_types):
+                self.addItem(f"{measure_type_name} ({measure_type_unit})")
+                self.index_id_dict[index] = measure_type_id
 
 
 class WindowAddMeasure(BasicWidget):
@@ -406,6 +422,15 @@ class WindowNewExercise(BasicWidget):
     def remove_style_sheet_line_edit_name(self):
         self.line_edit_name.setStyleSheet("")
 
+    def create_exercise_from_input(self):
+        name = self.line_edit_name.text()
+        comment = self.text_edit_comment.toPlainText()
+        url = self.line_edit_url.text()
+        category_id = self.combobox_category.get_id()
+        difficulty_id = self.combobox_difficulty.get_id()
+        muscle_group_ids = self.group_box_muscle_groups.get_ids()
+        return Exercise(name, comment, url, category_id, difficulty_id, muscle_group_ids)
+
 
 class WidgetNewExerciseForm(BasicWidget):
     def __init__(self, parent):
@@ -417,26 +442,36 @@ class GroupBoxMuscleGroups(QGroupBox, BasicWidget):
         super().__init__(title, parent)
         self.setLayout(QGridLayout(self))
         self.number_columns = 3
-        database = self.super_parent().database
         self.checkboxes = []
-        if database:
-            muscle_groups = database.get_muscle_groups()
-            for i, muscle_group in enumerate(muscle_groups):
-                checkbox = QCheckBox(muscle_group, self)
-                self.checkboxes.append(checkbox)
-                self.layout().addWidget(checkbox, i // 3, i % 3)
+        self.muscle_group_ids = []
+        self.create_checkboxes_from_database()
 
     def update(self) -> None:
         super().update()
-        database = self.super_parent().database
-        self.checkboxes = []
-        if database:
-            muscle_groups = database.get_muscle_groups()
-            for i, muscle_group in enumerate(muscle_groups):
-                checkbox = QCheckBox(muscle_group, self)
-                self.checkboxes.append(checkbox)
-                self.layout().addWidget(checkbox, i // 3, i % 3)
+        for checkbox in self.checkboxes:
+            checkbox.hide()
+            self.layout().removeWidget(checkbox)
+        self.create_checkboxes_from_database()
 
     def uncheck_checkboxes(self):
         for checkbox in self.checkboxes:
             checkbox.setChecked(False)
+
+    def create_checkboxes_from_database(self):
+        database = self.super_parent().database
+        self.checkboxes = []
+        self.muscle_group_ids = []
+        if database:
+            muscle_groups = database.get_muscle_groups()
+            for i, (id_muscle_group, muscle_group) in enumerate(muscle_groups):
+                checkbox = QCheckBox(muscle_group, self)
+                self.checkboxes.append(checkbox)
+                self.muscle_group_ids.append(id_muscle_group)
+                self.layout().addWidget(checkbox, i // 3, i % 3)
+
+    def get_ids(self):
+        ids = []
+        for muscle_group_id, checkbox in zip(self.muscle_group_ids, self.checkboxes):
+            if checkbox.isChecked():
+                ids.append(muscle_group_id)
+        return ids

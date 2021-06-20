@@ -122,23 +122,20 @@ class Database:
 
     def get_categories(self):
         with self.connection:
-            self.cursor.execute(f"SELECT name FROM {DATABASE_CATEGORY};")
-            raw_categories = self.cursor.fetchall()
-        return [category[0] for category in raw_categories]
+            self.cursor.execute(f"SELECT id, name FROM {DATABASE_CATEGORY};")
+            return self.cursor.fetchall()
 
     def get_difficulties(self):
         with self.connection:
-            self.cursor.execute(f"SELECT name FROM {DATABASE_DIFFICULTY};")
-            raw_difficulties = self.cursor.fetchall()
-        return [difficulty[0] for difficulty in raw_difficulties]
+            self.cursor.execute(f"SELECT id, name FROM {DATABASE_DIFFICULTY};")
+            return self.cursor.fetchall()
 
     def get_muscle_groups(self):
         with self.connection:
-            self.cursor.execute(f"SELECT name FROM {DATABASE_MUSCLE_GROUP};")
-            raw_muscle_groups = self.cursor.fetchall()
-            return [muscle_group[0] for muscle_group in raw_muscle_groups]
+            self.cursor.execute(f"SELECT id, name FROM {DATABASE_MUSCLE_GROUP};")
+            return self.cursor.fetchall()
 
     def get_measure_types(self):
         with self.connection:
-            self.cursor.execute(f"SELECT name, unit FROM {DATABASE_MEASURE_TYPE};")
+            self.cursor.execute(f"SELECT id, name, unit FROM {DATABASE_MEASURE_TYPE};")
             return self.cursor.fetchall()

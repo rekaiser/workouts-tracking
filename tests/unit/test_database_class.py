@@ -60,8 +60,7 @@ class TestBasicDatabase:
 
     def test_new_exercise(self, tmp_path):
         test_database = Database(tmp_path / "test_database.db")
-        test_exercise = Exercise("Test-Exercise", "Test comment", "Test Url", 1, 2, [1, 2],
-                                 [2, 3, 4])
+        test_exercise = Exercise("Test-Exercise", "Test comment", "Test Url", 1, 2, [1, 2])
         exercise_id = test_database.new_exercise(test_exercise)
         with test_database.connection:
             columns = ", ".join(EXERCISE_COLUMNS)
@@ -143,24 +142,20 @@ class TestDatabaseMethods:
 
     def test_get_categories(self, tmp_path):
         database = Database(tmp_path / "test_database.db")
-        category_entries = [entry[1] for entry in CATEGORY_ENTRIES]
-        for category in category_entries:
+        for category in CATEGORY_ENTRIES:
             assert category in database.get_categories()
 
     def test_get_difficulties(self, tmp_path):
         database = Database(tmp_path / "test_database.db")
-        difficulty_entries = [entry[1] for entry in DIFFICULTY_ENTRIES]
-        for difficulty in difficulty_entries:
+        for difficulty in DIFFICULTY_ENTRIES:
             assert difficulty in database.get_difficulties()
 
     def test_get_muscle_groups(self, tmp_path):
         database = Database(tmp_path / "test_database.db")
-        muscle_group_entries = [entry[1] for entry in MUSCLE_GROUP_ENTRIES]
-        for muscle_group in muscle_group_entries:
+        for muscle_group in MUSCLE_GROUP_ENTRIES:
             assert muscle_group in database.get_muscle_groups()
 
     def test_get_measure_types(self, tmp_path):
         database = Database(tmp_path / "test_database.db")
-        measure_type_entries = [(entry[1], entry[2]) for entry in MEASURE_TYPE_ENTRIES]
-        for measure_type in measure_type_entries:
+        for measure_type in MEASURE_TYPE_ENTRIES:
             assert measure_type in database.get_measure_types()
