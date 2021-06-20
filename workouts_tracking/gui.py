@@ -355,27 +355,6 @@ class NewExerciseForm(BasicWidget):
         super().__init__(parent)
 
 
-class ComboboxMeasureTypes(QComboBox, BasicWidget):
-    def __init__(self, parent, related_line_edit):
-        super().__init__(parent)
-        self.related_line_edit = related_line_edit
-        measure_types = [
-            "number (integer)", "number (float)", "sets", "repetitions", "repetitions per set",
-            "time", "time per set", "weight", "weight per set", "distance (m)",
-            "distance per set (m)", "text"
-        ]
-        self.addItems(measure_types)
-
-        self.currentIndexChanged.connect(self.set_default_measure_name)
-
-    def set_default_measure_name(self, index):
-        default_measure_names = [
-            "", "", "Sets", "Repetitions", "Repetitions per Set", "Time", "Time per Set", "Weight",
-            "Weight per Set", "Distance", "Distance per Set", ""
-        ]
-        self.related_line_edit.setText(default_measure_names[index])
-
-
 class GroupBoxMuscleGroups(QGroupBox, BasicWidget):
     def __init__(self, title, parent):
         super().__init__(title, parent)
