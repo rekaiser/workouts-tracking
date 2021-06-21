@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon
 
 from workouts_tracking.gui import (HLineSunken, ComboboxCategory, GroupBoxDatabase, ComboboxMuscles,
-                                   GroupBoxWorkout, GroupBoxExercise, GroupBoxAvailableExercises,
+                                   GroupBoxWorkout, GroupBoxExercise, GroupBoxExercises,
                                    ComboboxDifficulty, WindowNewExercise, GroupBoxMuscleGroups,
                                    WindowAddMeasure, ComboboxMeasureTypes,
                                    )
@@ -66,7 +66,7 @@ class TestGuiLayout:
         list_widgets_widget_classes_right = [
             (cwf.widget_right.groupbox_database, GroupBoxDatabase),
             (cwf.widget_right.groupbox_workout, GroupBoxWorkout),
-            (cwf.widget_right.groupbox_available_exercises, GroupBoxAvailableExercises),
+            (cwf.widget_right.groupbox_exercises, GroupBoxExercises),
             (cwf.widget_right.groupbox_exercise, GroupBoxExercise),
         ]
         for i, (widget, widget_class) in enumerate(list_widgets_widget_classes_right):
@@ -84,7 +84,7 @@ class TestGuiLayout:
         cwf = central_widget_fixture
         assert cwf.widget_right.groupbox_database.title() == "Database Actions"
         assert cwf.widget_right.groupbox_workout.title() == "Workout Actions"
-        assert cwf.widget_right.groupbox_available_exercises.title() == "Available Exercises"
+        assert cwf.widget_right.groupbox_exercises.title() == "Available Exercises"
         assert cwf.widget_right.groupbox_exercise.title() == "Exercise Actions"
 
     def test_groupbox_database(self, groupbox_database_fixture):
@@ -153,11 +153,27 @@ class TestGuiLayout:
         assert isinstance(gaf.layout(), QGridLayout)
 
         list_widgets_widget_classes_available_exercises = [
-            (gaf.table_available_exercises, QTableWidget),
+            (gaf.table_exercises, QTableWidget),
         ]
         for i, (widget, widget_class) in enumerate(list_widgets_widget_classes_available_exercises):
             assert isinstance(widget, widget_class)
             assert isinstance(gaf.layout().itemAt(i).widget(), widget_class)
+
+    def test_table_exercises_shows_exercises(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        exercise = Exercise("Test Exercise", "comm", "url.de", 1, 1, [2, 3, 6])
+        mwf.database.new_exercise(exercise)
+        mwf.update_table_exercises()
+        header_names = ["Exercise Name", "Comment", "Url", "Category", "Difficulty"]
+        table_exercises = mwf.widget_main.widget_right.groupbox_exercises.table_exercises
+        for i, header_name in enumerate(header_names):
+            assert table_exercises.horizontalHeaderItem(i).text() == header_name
+        assert table_exercises.item(0, 0).text() == "Test Exercise"
+        assert table_exercises.item(0, 1).text() == "comm"
+        assert table_exercises.item(0, 2).text() == "url.de"
+        assert table_exercises.item(0, 3).text() == "strength training"
+        assert table_exercises.item(0, 4).text() == "very easy"
 
 
 class TestWindowAddMeasure:

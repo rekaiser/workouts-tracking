@@ -70,6 +70,7 @@ class MainWindow(QMainWindow):
             self.window_new_exercise.group_box_muscle_groups,
             self.window_new_exercise.window_add_measure.combobox_type,
         ]
+        self.update_table_exercises()
 
     def new_exercise_action(self):
         if self.database is None:
@@ -86,18 +87,21 @@ class MainWindow(QMainWindow):
         self.database = Database(self.database_path)
         self.setWindowTitle(APPLICATION_NAME + " - " + str(os.path.basename(self.database_path)))
         self.update_widgets()
+        self.update_table_exercises()
 
     def load_database(self, database_path):
         self.database_path = database_path
         self.database = Database(self.database_path)
         self.setWindowTitle(APPLICATION_NAME + " - " + str(os.path.basename(self.database_path)))
         self.update_widgets()
+        self.update_table_exercises()
 
     def close_database(self):
         self.database_path = None
         self.database = None
         self.setWindowTitle(APPLICATION_NAME)
         self.update_widgets()
+        self.update_table_exercises()
 
     def new_database_action(self):
         database_path = self.file_dialog_new_database.getSaveFileName(self)[0]
@@ -117,6 +121,19 @@ class MainWindow(QMainWindow):
     def update_widgets(self):
         for widget in self.widgets_to_update:
             widget.update()
+
+    def update_table_exercises(self):
+        table_exercises = self.widget_main.widget_right.groupbox_exercises.table_exercises
+        if self.database is None:
+            table_exercises.setRowCount(0)
+        else:
+            exercise_rows = self.database.get_exercise_table_rows()
+            table_exercises.setRowCount(len(exercise_rows))
+            for i, row in enumerate(exercise_rows):
+                for j, item in enumerate(row):
+                    table_item = QTableWidgetItem(item)
+                    table_item.setFlags(table_item.flags() ^ Qt.ItemIsEditable)
+                    table_exercises.setItem(i, j, table_item)
 
 
 class MainWidget(QSplitter, BasicWidget):
@@ -154,8 +171,8 @@ class RightWidget(BasicWidget):
         self.layout().addWidget(self.groupbox_database)
         self.groupbox_workout = GroupBoxWorkout("Workout Actions", self)
         self.layout().addWidget(self.groupbox_workout)
-        self.groupbox_available_exercises = GroupBoxAvailableExercises("Available Exercises", self)
-        self.layout().addWidget(self.groupbox_available_exercises)
+        self.groupbox_exercises = GroupBoxExercises("Available Exercises", self)
+        self.layout().addWidget(self.groupbox_exercises)
         self.groupbox_exercise = GroupBoxExercise("Exercise Actions", self)
         self.layout().addWidget(self.groupbox_exercise)
 
@@ -218,13 +235,17 @@ class GroupBoxExercise(QGroupBox, BasicWidget):
         self.layout().addWidget(self.button_edit)
 
 
-class GroupBoxAvailableExercises(QGroupBox, BasicWidget):
+class GroupBoxExercises(QGroupBox, BasicWidget):
     def __init__(self, title, parent):
         super().__init__(title, parent)
         self.__layout = QGridLayout(self)
         self.setLayout(self.__layout)
-        self.table_available_exercises = QTableWidget(self)
-        self.__layout.addWidget(self.table_available_exercises, 1, 0, 1, 3)
+        self.table_exercises = QTableWidget(self)
+        self.table_exercises.setColumnCount(5)
+        self.header_names = ["Exercise Name", "Comment", "Url", "Category", "Difficulty"]
+        for i, header_name in enumerate(self.header_names):
+            self.table_exercises.setHorizontalHeaderItem(i, QTableWidgetItem(header_name))
+        self.__layout.addWidget(self.table_exercises, 1, 0, 1, 3)
 
     def layout(self):
         return self.__layout
@@ -450,6 +471,7 @@ class WindowNewExercise(BasicWidget):
             for measure in self.measures:
                 self.super_parent().database.new_measure(measure, exercise_id)
             self.close()
+            self.super_parent().update_table_exercises()
 
     def remove_style_sheet_line_edit_name(self):
         self.line_edit_name.setStyleSheet("")

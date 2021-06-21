@@ -235,3 +235,10 @@ class TestDatabaseMethods:
         test_database = Database(tmp_path / "test_database.db")
         measure_type_string = test_database.get_measure_type_string_for_id(2)
         assert measure_type_string == "long time (hh:mm:ss)"
+
+    def test_get_exercise_table_rows(self, tmp_path):
+        test_database = Database(tmp_path / "test_database.db")
+        test_exercise = Exercise("hu", "asas", "ooo.de", 1, 2, [1, 2, 3])
+        exercise_id = test_database.new_exercise(test_exercise)
+        exercise_rows = test_database.get_exercise_table_rows()
+        assert exercise_rows == [("hu", "asas", "ooo.de", "strength training", "easy")]
