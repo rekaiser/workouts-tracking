@@ -13,8 +13,5 @@ class TestEmptyDatabase:
         wne = mwf.window_new_exercise
         wne.line_edit_name.setText("Test Exercise")
         wne.button_add_exercise.click()
-        tables = mwf.database.get_table_names()
         exercises = mwf.database.get_exercise_names()
         assert "Test Exercise" in exercises
-        exercise_id = mwf.database.get_exercise_id("Test Exercise")
-        assert f"exercise_{exercise_id}" in tables

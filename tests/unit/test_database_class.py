@@ -10,9 +10,10 @@ from workouts_tracking.constants import (DATABASE_EXERCISE_COLUMNS as EXERCISE_C
                                          DATABASE_CATEGORY_ENTRIES as CATEGORY_ENTRIES,
                                          DATABASE_DIFFICULTY_ENTRIES as DIFFICULTY_ENTRIES,
                                          DATABASE_MUSCLE_GROUP_ENTRIES as MUSCLE_GROUP_ENTRIES,
-                                         DATABASE_MEASURE_TYPE_ENTRIES as MEASURE_TYPE_ENTRIES,)
+                                         DATABASE_MEASURE_TYPE_ENTRIES as MEASURE_TYPE_ENTRIES, )
 from workouts_tracking.utils import record_list_to_string, columns_list_to_string
 from workouts_tracking.exercise import Exercise
+from workouts_tracking.measure import Measure
 
 
 class TestBasicDatabase:
@@ -60,15 +61,17 @@ class TestBasicDatabase:
 
     def test_new_exercise(self, tmp_path):
         test_database = Database(tmp_path / "test_database.db")
-        test_exercise = Exercise("Test-Exercise", "Test comment", "Test Url", 1, 2, [1, 2],
-                                 [2, 3, 4])
+        test_exercise = Exercise("Test-Exercise", "Test comment", "Test Url", 1, 2, [1, 2])
         exercise_id = test_database.new_exercise(test_exercise)
         with test_database.connection:
             columns = ", ".join(EXERCISE_COLUMNS)
             test_database.cursor.execute(f"SELECT {columns} "
                                          f"FROM {EXERCISE} WHERE id = {exercise_id};")
             new_exercise_record = test_database.cursor.fetchone()
+            exercise_muscle_groups = test_database.get_exercise_muscle_groups()
         assert new_exercise_record[EXERCISE_COLUMNS.index("name")] == "Test-Exercise"
+        assert (exercise_id, 1) in exercise_muscle_groups
+        assert (exercise_id, 2) in exercise_muscle_groups
 
 
 class TestDifferentInitialDatabases:
@@ -143,24 +146,92 @@ class TestDatabaseMethods:
 
     def test_get_categories(self, tmp_path):
         database = Database(tmp_path / "test_database.db")
-        category_entries = [entry[1] for entry in CATEGORY_ENTRIES]
-        for category in category_entries:
+        for category in CATEGORY_ENTRIES:
             assert category in database.get_categories()
 
     def test_get_difficulties(self, tmp_path):
         database = Database(tmp_path / "test_database.db")
-        difficulty_entries = [entry[1] for entry in DIFFICULTY_ENTRIES]
-        for difficulty in difficulty_entries:
+        for difficulty in DIFFICULTY_ENTRIES:
             assert difficulty in database.get_difficulties()
 
     def test_get_muscle_groups(self, tmp_path):
         database = Database(tmp_path / "test_database.db")
-        muscle_group_entries = [entry[1] for entry in MUSCLE_GROUP_ENTRIES]
-        for muscle_group in muscle_group_entries:
+        for muscle_group in MUSCLE_GROUP_ENTRIES:
             assert muscle_group in database.get_muscle_groups()
 
     def test_get_measure_types(self, tmp_path):
         database = Database(tmp_path / "test_database.db")
-        measure_type_entries = [(entry[1], entry[2]) for entry in MEASURE_TYPE_ENTRIES]
-        for measure_type in measure_type_entries:
+        for measure_type in MEASURE_TYPE_ENTRIES:
             assert measure_type in database.get_measure_types()
+
+    def test_get_exercises(self, tmp_path):
+        database = Database(tmp_path / "test_database.db")
+        with database.connection:
+            database.cursor.execute("INSERT INTO exercise "
+                                    "(id, name, comment, url, category_id, difficulty_id) values "
+                                    "(1, 'A', 'B', 'C', 1, 2),"
+                                    "(2, 'a', 'b', 'c', 3, 1);")
+            exercises = database.get_exercises()
+            assert (1, 'A', 'B', 'C', 1, 2) in exercises
+            assert (2, 'a', 'b', 'c', 3, 1) in exercises
+            exercises = database.get_exercises(with_id=False)
+            assert ('A', 'B', 'C', 1, 2) in exercises
+            assert ('a', 'b', 'c', 3, 1) in exercises
+
+    def test_get_id_for_exercise_name(self, tmp_path):
+        database = Database(tmp_path / "test_database.db")
+        with database.connection:
+            database.cursor.execute("INSERT INTO exercise "
+                                    "(id, name, comment, url, category_id, difficulty_id) values "
+                                    "(23, 'A', 'B', 'C', 1, 2),"
+                                    "(113, 'a', 'b', 'c', 3, 1);")
+            exercise_id = database.get_id_for_exercise_name("a")
+            assert exercise_id == 113
+
+    def test_get_exercise_muscle_groups(self, tmp_path):
+        database = Database(tmp_path / "test_database.db")
+        with database.connection:
+            database.cursor.execute("INSERT INTO exercise "
+                                    "(id, name, comment, url, category_id, difficulty_id) values "
+                                    "(23, 'A', 'B', 'C', 1, 2);")
+            database.cursor.execute("INSERT INTO exercise_muscle_group "
+                                    "(exercise_id, muscle_group_id) values "
+                                    "(23, 1),"
+                                    "(23, 4);")
+            exercise_muscle_groups = database.get_exercise_muscle_groups()
+            assert (23, 1) in exercise_muscle_groups
+            assert (23, 4) in exercise_muscle_groups
+
+    def test_get_measures(self, tmp_path):
+        database = Database(tmp_path / "test_database.db")
+        with database.connection:
+            database.cursor.execute("INSERT INTO exercise "
+                                    "(id, name, comment, url, category_id, difficulty_id) values "
+                                    "(23, 'A', 'B', 'C', 1, 2);")
+            database.cursor.execute("INSERT INTO measure "
+                                    "(id, name, type_id, per_set, exercise_id) VALUES "
+                                    "(2, 'hoh', 1, 0, 23),"
+                                    "(3, 'kok', 2, 1, 23);")
+            measures = database.get_measures()
+            assert (2, 'hoh', 1, 0, 23) in measures
+            assert (3, 'kok', 2, 1, 23) in measures
+            measures = database.get_measures(with_id=False)
+            assert ('hoh', 1, 0, 23) in measures
+            assert ('kok', 2, 1, 23) in measures
+
+    def test_new_measure(self, tmp_path):
+        test_database = Database(tmp_path / "test_database.db")
+        test_measure = Measure("Measure name", 3, True)
+        test_exercise = Exercise("hu", "", "", 1, 2, [1, 2, 3])
+        exercise_id = test_database.new_exercise(test_exercise)
+        measure_id = test_database.new_measure(test_measure, exercise_id)
+        with test_database.connection:
+            test_database.cursor.execute(f"SELECT id, name, type_id, per_set, exercise_id "
+                                         f"FROM measure WHERE id = ?;", (measure_id,))
+            new_measure_record = test_database.cursor.fetchone()
+            assert new_measure_record == (measure_id, "Measure name", 3, 1, exercise_id)
+
+    def test_get_measure_type_string_for_id(self, tmp_path):
+        test_database = Database(tmp_path / "test_database.db")
+        measure_type_string = test_database.get_measure_type_string_for_id(2)
+        assert measure_type_string == "long time (hh:mm:ss)"

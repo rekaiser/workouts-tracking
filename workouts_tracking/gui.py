@@ -11,6 +11,8 @@ from PySide6.QtGui import QCloseEvent, QIcon
 
 from .constants import APPLICATION_NAME, INSTALL_DIR
 from .database import Database
+from .exercise import Exercise
+from .measure import Measure
 
 
 def create_app(sys_argv):
@@ -237,18 +239,25 @@ class GroupBoxAvailableExercises(QGroupBox, BasicWidget):
 class ComboboxCategory(QComboBox, BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        database = self.super_parent().database
-        if database:
-            categories = database.get_categories()
-            self.addItems(categories)
+        self.index_id_dict = {}
+        self.add_items_from_database()
 
     def update(self) -> None:
         super().update()
-        database = self.super_parent().database
         self.clear()
+        self.index_id_dict = {}
+        self.add_items_from_database()
+
+    def add_items_from_database(self):
+        database = self.super_parent().database
         if database:
             categories = database.get_categories()
-            self.addItems(categories)
+            for index, (category_id, category) in enumerate(categories):
+                self.addItem(category)
+                self.index_id_dict[index] = category_id
+
+    def get_id(self):
+        return self.index_id_dict[self.currentIndex()]
 
 
 class ComboboxMuscles(QComboBox, BasicWidget):
@@ -263,38 +272,49 @@ class ComboboxMuscles(QComboBox, BasicWidget):
 class ComboboxDifficulty(QComboBox, BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        database = self.super_parent().database
-        if database:
-            categories = database.get_categories()
-            self.addItems(categories)
+        self.index_id_dict = {}
+        self.add_items_from_database()
 
     def update(self) -> None:
         super().update()
-        database = self.super_parent().database
         self.clear()
+        self.index_id_dict = {}
+        self.add_items_from_database()
+
+    def add_items_from_database(self):
+        database = self.super_parent().database
         if database:
             difficulties = database.get_difficulties()
-            self.addItems(difficulties)
+            for index, (difficulty_id, difficulty) in enumerate(difficulties):
+                self.addItem(difficulty)
+                self.index_id_dict[index] = difficulty_id
+
+    def get_id(self):
+        return self.index_id_dict[self.currentIndex()]
 
 
 class ComboboxMeasureTypes(QComboBox, BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        database = self.super_parent().database
-        if database:
-            measure_types = database.get_measure_types()
-            measure_types = [f"{measure_type[0]} ({measure_type[1]})"
-                             for measure_type in measure_types]
-            self.addItems(measure_types)
+        self.index_id_dict = {}
+        self.add_items_from_database()
 
     def update(self) -> None:
         super().update()
+        self.clear()
+        self.add_items_from_database()
+
+    def add_items_from_database(self):
         database = self.super_parent().database
         if database:
             measure_types = database.get_measure_types()
-            measure_types = [f"{measure_type[0]} ({measure_type[1]})"
-                             for measure_type in measure_types]
-            self.addItems(measure_types)
+            for index, (measure_type_id, measure_type_name, measure_type_unit) \
+                    in enumerate(measure_types):
+                self.addItem(f"{measure_type_name} ({measure_type_unit})")
+                self.index_id_dict[index] = measure_type_id
+
+    def get_id(self):
+        return self.index_id_dict[self.currentIndex()]
 
 
 class WindowAddMeasure(BasicWidget):
@@ -308,6 +328,7 @@ class WindowAddMeasure(BasicWidget):
 
         self.label_name = QLabel("Measure Name:", self)
         self.line_edit_name = QLineEdit(self)
+        self.line_edit_name.textChanged.connect(self.remove_style_sheet_line_edit_name)
         self.layout().addRow(self.label_name, self.line_edit_name)
         self.label_type = QLabel("Measure Type:", self)
         self.combobox_type = ComboboxMeasureTypes(self)
@@ -316,13 +337,35 @@ class WindowAddMeasure(BasicWidget):
         self.checkbox_per_set = QCheckBox(self)
         self.layout().addRow(self.label_per_set, self.checkbox_per_set)
         self.button_discard = QPushButton("Discard", self)
+        self.button_discard.clicked.connect(self.button_discard_action)
         self.button_add = QPushButton("Add", self)
+        self.button_add.clicked.connect(self.button_add_measure_action)
         self.layout().addRow(self.button_discard, self.button_add)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         self.line_edit_name.setText("")
         self.checkbox_per_set.setChecked(False)
         return super().closeEvent(event)
+
+    def button_discard_action(self):
+        self.close()
+
+    def button_add_measure_action(self):
+        if self.line_edit_name.text() == "":
+            self.line_edit_name.setStyleSheet("QLineEdit {background: rgb(255, 0, 0)}")
+        else:
+            measure = self.create_measure_from_input()
+            self.close()
+            self.parent().insert_measure_into_table(measure)
+
+    def remove_style_sheet_line_edit_name(self):
+        self.line_edit_name.setStyleSheet("")
+
+    def create_measure_from_input(self):
+        name = self.line_edit_name.text()
+        type_id = self.combobox_type.get_id()
+        per_set = self.checkbox_per_set.isChecked()
+        return Measure(name, type_id, per_set)
 
 
 class WindowNewExercise(BasicWidget):
@@ -333,6 +376,7 @@ class WindowNewExercise(BasicWidget):
         self.setWindowTitle("Add New Exercise")
         self.setWindowModality(Qt.WindowModal)
         self.setLayout(QVBoxLayout(self))
+        self.measures = []
 
         self.new_exercise_form = WidgetNewExerciseForm(self)
         self.layout().addWidget(self.new_exercise_form)
@@ -363,10 +407,11 @@ class WindowNewExercise(BasicWidget):
         self.layout().addWidget(self.measure_buttons)
         self.measure_buttons.setLayout(QHBoxLayout(self.measure_buttons))
         self.button_delete_measure = QPushButton("Delete Measure", self.measure_buttons)
+        self.button_delete_measure.clicked.connect(self.delete_measures_action)
         self.measure_buttons.layout().addWidget(self.button_delete_measure)
         self.button_add_measure = QPushButton("Add Measure", self.measure_buttons)
         self.measure_buttons.layout().addWidget(self.button_add_measure)
-        self.button_add_measure.clicked.connect(self.window_add_measure.show)
+        self.button_add_measure.clicked.connect(self.add_measure_action)
 
         self.table_measures = QTableWidget(0, 3, self)
         self.layout().addWidget(self.table_measures)
@@ -385,11 +430,16 @@ class WindowNewExercise(BasicWidget):
         self.finish_buttons.layout().addWidget(self.button_add_exercise)
         self.button_add_exercise.clicked.connect(self.button_add_exercise_action)
 
+    def add_measure_action(self):
+        self.window_add_measure.show()
+
     def closeEvent(self, event: QCloseEvent) -> None:
         self.line_edit_name.setText("")
         self.text_edit_comment.setPlainText("")
         self.line_edit_url.setText("")
         self.group_box_muscle_groups.uncheck_checkboxes()
+        self.table_measures.setRowCount(0)
+        self.measures = []
         return super().closeEvent(event)
 
     def button_discard_action(self):
@@ -401,10 +451,45 @@ class WindowNewExercise(BasicWidget):
             self.line_edit_name.setStyleSheet("QLineEdit {background: rgb(255, 0, 0)}")
             valid_text = False
         if valid_text:
+            exercise = self.create_exercise_from_input()
+            exercise_id = self.super_parent().database.new_exercise(exercise)
+            for measure in self.measures:
+                self.super_parent().database.new_measure(measure, exercise_id)
             self.close()
 
     def remove_style_sheet_line_edit_name(self):
         self.line_edit_name.setStyleSheet("")
+
+    def create_exercise_from_input(self):
+        name = self.line_edit_name.text()
+        comment = self.text_edit_comment.toPlainText()
+        url = self.line_edit_url.text()
+        category_id = self.combobox_category.get_id()
+        difficulty_id = self.combobox_difficulty.get_id()
+        muscle_group_ids = self.group_box_muscle_groups.get_ids()
+        return Exercise(name, comment, url, category_id, difficulty_id, muscle_group_ids)
+
+    def insert_measure_into_table(self, measure):
+        self.measures.append(measure)
+        row_count = self.table_measures.rowCount()
+        self.table_measures.insertRow(row_count)
+        self.table_measures.setItem(row_count, 0, QTableWidgetItem(measure.name))
+        type_string = self.super_parent().database.get_measure_type_string_for_id(measure.type_id)
+        self.table_measures.setItem(row_count, 1, QTableWidgetItem(type_string))
+        per_set_string = "yes" if measure.per_set else "no"
+        self.table_measures.setItem(row_count, 2, QTableWidgetItem(per_set_string))
+
+    def delete_measures_action(self):
+        selection_model = self.table_measures.selectionModel()
+        selected_indexes = selection_model.selectedIndexes()
+        rows_to_delete = set()
+        for index in selected_indexes:
+            rows_to_delete.add(index.row())
+        rows_to_delete = list(rows_to_delete)
+        rows_to_delete.sort(reverse=True)
+        for row in rows_to_delete:
+            self.table_measures.removeRow(row)
+            del self.measures[row]
 
 
 class WidgetNewExerciseForm(BasicWidget):
@@ -417,26 +502,36 @@ class GroupBoxMuscleGroups(QGroupBox, BasicWidget):
         super().__init__(title, parent)
         self.setLayout(QGridLayout(self))
         self.number_columns = 3
-        database = self.super_parent().database
         self.checkboxes = []
-        if database:
-            muscle_groups = database.get_muscle_groups()
-            for i, muscle_group in enumerate(muscle_groups):
-                checkbox = QCheckBox(muscle_group, self)
-                self.checkboxes.append(checkbox)
-                self.layout().addWidget(checkbox, i // 3, i % 3)
+        self.muscle_group_ids = []
+        self.create_checkboxes_from_database()
 
     def update(self) -> None:
         super().update()
-        database = self.super_parent().database
-        self.checkboxes = []
-        if database:
-            muscle_groups = database.get_muscle_groups()
-            for i, muscle_group in enumerate(muscle_groups):
-                checkbox = QCheckBox(muscle_group, self)
-                self.checkboxes.append(checkbox)
-                self.layout().addWidget(checkbox, i // 3, i % 3)
+        for checkbox in self.checkboxes:
+            checkbox.hide()
+            self.layout().removeWidget(checkbox)
+        self.create_checkboxes_from_database()
 
     def uncheck_checkboxes(self):
         for checkbox in self.checkboxes:
             checkbox.setChecked(False)
+
+    def create_checkboxes_from_database(self):
+        database = self.super_parent().database
+        self.checkboxes = []
+        self.muscle_group_ids = []
+        if database:
+            muscle_groups = database.get_muscle_groups()
+            for i, (id_muscle_group, muscle_group) in enumerate(muscle_groups):
+                checkbox = QCheckBox(muscle_group, self)
+                self.checkboxes.append(checkbox)
+                self.muscle_group_ids.append(id_muscle_group)
+                self.layout().addWidget(checkbox, i // 3, i % 3)
+
+    def get_ids(self):
+        ids = []
+        for muscle_group_id, checkbox in zip(self.muscle_group_ids, self.checkboxes):
+            if checkbox.isChecked():
+                ids.append(muscle_group_id)
+        return ids

@@ -17,6 +17,8 @@ from workouts_tracking.constants import (
     DATABASE_MUSCLE_GROUP_ENTRIES,
     DATABASE_MEASURE_TYPE_ENTRIES,
 )
+from workouts_tracking.exercise import Exercise
+from workouts_tracking.measure import Measure
 
 
 class TestMainProperties:
@@ -212,6 +214,42 @@ class TestWindowAddMeasure:
         assert wam.line_edit_name.text() == ""
         assert not wam.checkbox_per_set.isChecked()
 
+    def test_add_measure_button(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        mwf.new_exercise_action()
+        wam = mwf.window_new_exercise.window_add_measure
+        mwf.window_new_exercise.add_measure_action()
+        assert wam.isVisible()
+        wam.line_edit_name.setText("Test name")
+        wam.combobox_type.setCurrentIndex(4)
+        wam.button_add.click()
+        assert not wam.isVisible()
+        assert mwf.window_new_exercise.measures[0] == Measure("Test name", 5, False)
+        assert mwf.window_new_exercise.table_measures.item(0, 0).text() == "Test name"
+        assert mwf.window_new_exercise.table_measures.item(0, 1).text() == "sets (integer)"
+        assert mwf.window_new_exercise.table_measures.item(0, 2).text() == "no"
+
+    def test_discard_button(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        mwf.new_exercise_action()
+        wam = mwf.window_new_exercise.window_add_measure
+        mwf.window_new_exercise.add_measure_action()
+        assert wam.isVisible()
+        wam.button_discard.click()
+        assert not wam.isVisible()
+
+    def test_create_measure_from_input(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        wam = mwf.window_new_exercise.window_add_measure
+        wam.line_edit_name.setText("Test measure")
+        wam.combobox_type.setCurrentIndex(3)
+        wam.checkbox_per_set.setChecked(True)
+        m = wam.create_measure_from_input()
+        assert m == Measure("Test measure", 4, True)
+
 
 class TestWindowNewExercise:
     def test_existence(self, main_window_fixture):
@@ -311,12 +349,14 @@ class TestWindowNewExercise:
         wne.line_edit_url.setText("Some_url.de")
         wne.text_edit_comment.setPlainText("Some plain text")
         wne.group_box_muscle_groups.checkboxes[0].setChecked(True)
+        wne.table_measures.setRowCount(2)
         wne.close()
         assert wne.line_edit_name.text() == ""
         assert wne.line_edit_url.text() == ""
         assert wne.text_edit_comment.toPlainText() == ""
         for checkbox in wne.group_box_muscle_groups.checkboxes:
             assert not checkbox.isChecked()
+        assert wne.table_measures.rowCount() == 0
 
     def test_discard_button(self, main_window_fixture, database_filename_fixture):
         mwf = main_window_fixture
@@ -369,6 +409,53 @@ class TestWindowNewExercise:
         mwf.widget_main.widget_right.groupbox_exercise.button_new.click()
         wne.button_add_measure.click()
         assert wne.window_add_measure.isVisible()
+
+    def test_create_exercise_from_input(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        wne = mwf.window_new_exercise
+        wne.line_edit_name.setText("Test Name 3")
+        wne.text_edit_comment.setPlainText("Test Plain Text")
+        wne.line_edit_url.setText("url-to-test.de")
+        wne.combobox_category.setCurrentIndex(2)
+        wne.combobox_difficulty.setCurrentIndex(1)
+        wne.group_box_muscle_groups.checkboxes[2].setChecked(True)
+        wne.group_box_muscle_groups.checkboxes[7].setChecked(True)
+        e = wne.create_exercise_from_input()
+        assert isinstance(e, Exercise)
+        assert e == Exercise("Test Name 3", "Test Plain Text", "url-to-test.de", 3, 2, [3, 8])
+
+    def test_delete_selected_measure(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        wne = mwf.window_new_exercise
+        wne.insert_measure_into_table(Measure("hihi", 2, True))
+        wne.insert_measure_into_table(Measure("hih", 3, False))
+        wne.table_measures.selectRow(0)
+        wne.button_delete_measure.click()
+        assert wne.table_measures.rowCount() == 1
+        assert wne.table_measures.item(0, 0).text() == "hih"
+        assert wne.measures[0] == Measure("hih", 3, False)
+
+    def test_add_exercise_to_database(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        wne = mwf.window_new_exercise
+        wne.measures.append(Measure("Measure 1", 2, False))
+        wne.measures.append(Measure("Measure 2", 3, True))
+        wne.line_edit_name.setText("Exercise 1")
+        wne.line_edit_url.setText("url.de")
+        wne.text_edit_comment.setPlainText("Some Comment")
+        wne.group_box_muscle_groups.checkboxes[0].setChecked(True)
+        wne.group_box_muscle_groups.checkboxes[2].setChecked(True)
+        wne.button_add_exercise.click()
+        assert ("Exercise 1", "Some Comment", "url.de", 1, 1) in \
+               mwf.database.get_exercises(with_id=False)
+        exercise_id = mwf.database.get_id_for_exercise_name("Exercise 1")
+        assert (exercise_id, 1) in mwf.database.get_exercise_muscle_groups()
+        assert (exercise_id, 3) in mwf.database.get_exercise_muscle_groups()
+        assert ("Measure 1", 2, 0, exercise_id) in mwf.database.get_measures(with_id=False)
+        assert ("Measure 2", 3, 1, exercise_id) in mwf.database.get_measures(with_id=False)
 
 
 class TestDatabaseFileDialogs:
