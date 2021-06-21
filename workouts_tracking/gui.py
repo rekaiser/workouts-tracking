@@ -223,12 +223,6 @@ class GroupBoxAvailableExercises(QGroupBox, BasicWidget):
         super().__init__(title, parent)
         self.__layout = QGridLayout(self)
         self.setLayout(self.__layout)
-        self.combobox_category = ComboboxCategory(self)
-        self.__layout.addWidget(self.combobox_category, 0, 0)
-        self.combobox_muscles = ComboboxMuscles(self)
-        self.__layout.addWidget(self.combobox_muscles, 0, 1)
-        self.combobox_difficulty = ComboboxDifficulty(self)
-        self.__layout.addWidget(self.combobox_difficulty, 0, 2)
         self.table_available_exercises = QTableWidget(self)
         self.__layout.addWidget(self.table_available_exercises, 1, 0, 1, 3)
 

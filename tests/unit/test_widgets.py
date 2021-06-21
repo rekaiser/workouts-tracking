@@ -153,9 +153,6 @@ class TestGuiLayout:
         assert isinstance(gaf.layout(), QGridLayout)
 
         list_widgets_widget_classes_available_exercises = [
-            (gaf.combobox_category, ComboboxCategory),
-            (gaf.combobox_muscles, ComboboxMuscles),
-            (gaf.combobox_difficulty, ComboboxDifficulty),
             (gaf.table_available_exercises, QTableWidget),
         ]
         for i, (widget, widget_class) in enumerate(list_widgets_widget_classes_available_exercises):
