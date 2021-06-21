@@ -1,11 +1,12 @@
 import sqlite3 as sql
 
 from workouts_tracking.exercise import Exercise
+from workouts_tracking.measure import Measure
 from workouts_tracking.constants import (DATABASE_TABLES_DICTIONARY, DATABASE_TABLE_ENTRIES,
                                          DATABASE_TABLE_COLUMNS, DATABASE_EXERCISE,
                                          DATABASE_EXERCISE_COLUMNS, DATABASE_CATEGORY,
                                          DATABASE_DIFFICULTY, DATABASE_MUSCLE_GROUP,
-                                         DATABASE_MEASURE_TYPE,)
+                                         DATABASE_MEASURE_TYPE, DATABASE_MEASURE)
 from workouts_tracking.utils import (record_list_to_string, columns_list_to_string,
                                      )
 
@@ -82,6 +83,10 @@ class Database:
             place_holders = ("?," * len(DATABASE_EXERCISE_COLUMNS))[:-1]
             self.cursor.execute(f"INSERT INTO {DATABASE_EXERCISE} ({columns}) "
                                 f"VALUES ({place_holders});", values)
+            for muscle_group_id in exercise.muscle_group_ids:
+                self.cursor.execute("INSERT INTO exercise_muscle_group "
+                                    "(exercise_id, muscle_group_id) values "
+                                    "(?,?);", (exercise_id, muscle_group_id))
         return exercise_id
 
     def get_table_names(self):
@@ -147,3 +152,46 @@ class Database:
                                 f"WHERE id = ?;",
                                 [measure_type_id])
             return self.cursor.fetchone()
+
+    def get_exercises(self, with_id=True):
+        with self.connection:
+            if with_id:
+                self.cursor.execute("SELECT id, name, comment, url, category_id, difficulty_id "
+                                    "FROM exercise;")
+            else:
+                self.cursor.execute("SELECT name, comment, url, category_id, difficulty_id "
+                                    "FROM exercise;")
+            return self.cursor.fetchall()
+
+    def get_id_for_exercise_name(self, name):
+        with self.connection:
+            self.cursor.execute("SELECT id FROM exercise WHERE name=?;", (name,))
+            exercise_id = self.cursor.fetchone()
+            return exercise_id[0]
+
+    def get_exercise_muscle_groups(self):
+        with self.connection:
+            self.cursor.execute("SELECT exercise_id, muscle_group_id FROM exercise_muscle_group;")
+            return self.cursor.fetchall()
+
+    def get_measures(self, with_id=True):
+        with self.connection:
+            if with_id:
+                self.cursor.execute("SELECT id, name, type_id, per_set, exercise_id FROM measure;")
+            else:
+                self.cursor.execute("SELECT name, type_id, per_set, exercise_id FROM measure;")
+            return self.cursor.fetchall()
+
+    def new_measure(self, measure: Measure, exercise_id: int):
+        max_id = self.get_max_id_from_table(DATABASE_MEASURE)
+        measure_id = max_id + 1
+        with self.connection:
+            values = measure.values_for_measure_table()
+            values = (measure_id, *values, exercise_id)
+            self.cursor.execute(f"INSERT INTO measure (id, name, type_id, per_set, exercise_id) "
+                                f"VALUES (?, ?, ?, ?, ?);", values)
+        return measure_id
+
+    def get_measure_type_string_for_id(self, measure_type_id: int):
+        measure_type_id, name, unit = self.get_measure_type_for_id(measure_type_id)
+        return f"{name} ({unit})"

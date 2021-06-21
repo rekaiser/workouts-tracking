@@ -451,6 +451,10 @@ class WindowNewExercise(BasicWidget):
             self.line_edit_name.setStyleSheet("QLineEdit {background: rgb(255, 0, 0)}")
             valid_text = False
         if valid_text:
+            exercise = self.create_exercise_from_input()
+            exercise_id = self.super_parent().database.new_exercise(exercise)
+            for measure in self.measures:
+                self.super_parent().database.new_measure(measure, exercise_id)
             self.close()
 
     def remove_style_sheet_line_edit_name(self):
@@ -470,7 +474,7 @@ class WindowNewExercise(BasicWidget):
         row_count = self.table_measures.rowCount()
         self.table_measures.insertRow(row_count)
         self.table_measures.setItem(row_count, 0, QTableWidgetItem(measure.name))
-        type_string = measure.get_type_string(self.super_parent().database)
+        type_string = self.super_parent().database.get_measure_type_string_for_id(measure.type_id)
         self.table_measures.setItem(row_count, 1, QTableWidgetItem(type_string))
         per_set_string = "yes" if measure.per_set else "no"
         self.table_measures.setItem(row_count, 2, QTableWidgetItem(per_set_string))

@@ -16,5 +16,3 @@ class TestEmptyDatabase:
         tables = mwf.database.get_table_names()
         exercises = mwf.database.get_exercise_names()
         assert "Test Exercise" in exercises
-        exercise_id = mwf.database.get_exercise_id("Test Exercise")
-        assert f"exercise_{exercise_id}" in tables

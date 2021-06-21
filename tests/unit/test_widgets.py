@@ -437,6 +437,26 @@ class TestWindowNewExercise:
         assert wne.table_measures.item(0, 0).text() == "hih"
         assert wne.measures[0] == Measure("hih", 3, False)
 
+    def test_add_exercise_to_database(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        wne = mwf.window_new_exercise
+        wne.measures.append(Measure("Measure 1", 2, False))
+        wne.measures.append(Measure("Measure 2", 3, True))
+        wne.line_edit_name.setText("Exercise 1")
+        wne.line_edit_url.setText("url.de")
+        wne.text_edit_comment.setPlainText("Some Comment")
+        wne.group_box_muscle_groups.checkboxes[0].setChecked(True)
+        wne.group_box_muscle_groups.checkboxes[2].setChecked(True)
+        wne.button_add_exercise.click()
+        assert ("Exercise 1", "Some Comment", "url.de", 1, 1) in \
+               mwf.database.get_exercises(with_id=False)
+        exercise_id = mwf.database.get_id_for_exercise_name("Exercise 1")
+        assert (exercise_id, 1) in mwf.database.get_exercise_muscle_groups()
+        assert (exercise_id, 3) in mwf.database.get_exercise_muscle_groups()
+        assert ("Measure 1", 2, 0, exercise_id) in mwf.database.get_measures(with_id=False)
+        assert ("Measure 2", 3, 1, exercise_id) in mwf.database.get_measures(with_id=False)
+
 
 class TestDatabaseFileDialogs:
     def test_file_dialog_new_database(self, main_window_fixture):
