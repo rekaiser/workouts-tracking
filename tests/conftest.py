@@ -45,7 +45,7 @@ def groupbox_exercise_fixture(central_widget_fixture):
 
 @pytest.fixture()
 def groupbox_available_exercises_fixture(central_widget_fixture):
-    yield central_widget_fixture.widget_right.groupbox_available_exercises
+    yield central_widget_fixture.widget_right.groupbox_exercises
 
 
 @pytest.fixture()

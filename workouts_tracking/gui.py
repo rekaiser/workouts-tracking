@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout
                                QVBoxLayout, QTableWidget, QLabel, QFrame, QGroupBox, QComboBox,
                                QPushButton, QGridLayout, QFormLayout, QLineEdit,
                                QFileDialog, QErrorMessage, QPlainTextEdit, QCheckBox,
-                               QTableWidgetItem,
+                               QTableWidgetItem, QRadioButton,
                                )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent, QIcon
@@ -70,6 +70,7 @@ class MainWindow(QMainWindow):
             self.window_new_exercise.group_box_muscle_groups,
             self.window_new_exercise.window_add_measure.combobox_type,
         ]
+        self.update_table_exercises()
 
     def new_exercise_action(self):
         if self.database is None:
@@ -86,18 +87,21 @@ class MainWindow(QMainWindow):
         self.database = Database(self.database_path)
         self.setWindowTitle(APPLICATION_NAME + " - " + str(os.path.basename(self.database_path)))
         self.update_widgets()
+        self.update_table_exercises()
 
     def load_database(self, database_path):
         self.database_path = database_path
         self.database = Database(self.database_path)
         self.setWindowTitle(APPLICATION_NAME + " - " + str(os.path.basename(self.database_path)))
         self.update_widgets()
+        self.update_table_exercises()
 
     def close_database(self):
         self.database_path = None
         self.database = None
         self.setWindowTitle(APPLICATION_NAME)
         self.update_widgets()
+        self.update_table_exercises()
 
     def new_database_action(self):
         database_path = self.file_dialog_new_database.getSaveFileName(self)[0]
@@ -117,6 +121,19 @@ class MainWindow(QMainWindow):
     def update_widgets(self):
         for widget in self.widgets_to_update:
             widget.update()
+
+    def update_table_exercises(self):
+        table_exercises = self.widget_main.widget_right.groupbox_exercises.table_exercises
+        if self.database is None:
+            table_exercises.setRowCount(0)
+        else:
+            exercise_rows = self.database.get_exercise_table_rows()
+            table_exercises.setRowCount(len(exercise_rows))
+            for i, row in enumerate(exercise_rows):
+                for j, item in enumerate(row):
+                    table_item = QTableWidgetItem(item)
+                    table_item.setFlags(table_item.flags() ^ Qt.ItemIsEditable)
+                    table_exercises.setItem(i, j, table_item)
 
 
 class MainWidget(QSplitter, BasicWidget):
@@ -154,8 +171,8 @@ class RightWidget(BasicWidget):
         self.layout().addWidget(self.groupbox_database)
         self.groupbox_workout = GroupBoxWorkout("Workout Actions", self)
         self.layout().addWidget(self.groupbox_workout)
-        self.groupbox_available_exercises = GroupBoxAvailableExercises("Available Exercises", self)
-        self.layout().addWidget(self.groupbox_available_exercises)
+        self.groupbox_exercises = GroupBoxExercises("Available Exercises", self)
+        self.layout().addWidget(self.groupbox_exercises)
         self.groupbox_exercise = GroupBoxExercise("Exercise Actions", self)
         self.layout().addWidget(self.groupbox_exercise)
 
@@ -218,13 +235,17 @@ class GroupBoxExercise(QGroupBox, BasicWidget):
         self.layout().addWidget(self.button_edit)
 
 
-class GroupBoxAvailableExercises(QGroupBox, BasicWidget):
+class GroupBoxExercises(QGroupBox, BasicWidget):
     def __init__(self, title, parent):
         super().__init__(title, parent)
         self.__layout = QGridLayout(self)
         self.setLayout(self.__layout)
-        self.table_available_exercises = QTableWidget(self)
-        self.__layout.addWidget(self.table_available_exercises, 1, 0, 1, 3)
+        self.table_exercises = QTableWidget(self)
+        self.table_exercises.setColumnCount(5)
+        self.header_names = ["Exercise Name", "Comment", "Url", "Category", "Difficulty"]
+        for i, header_name in enumerate(self.header_names):
+            self.table_exercises.setHorizontalHeaderItem(i, QTableWidgetItem(header_name))
+        self.__layout.addWidget(self.table_exercises, 1, 0, 1, 3)
 
     def layout(self):
         return self.__layout
@@ -301,7 +322,7 @@ class ComboboxMeasureTypes(QComboBox, BasicWidget):
     def add_items_from_database(self):
         database = self.super_parent().database
         if database:
-            measure_types = database.get_measure_types()
+            measure_types = database.get_measure_types(without_sets=True)
             for index, (measure_type_id, measure_type_name, measure_type_unit) \
                     in enumerate(measure_types):
                 self.addItem(f"{measure_type_name} ({measure_type_unit})")
@@ -406,6 +427,9 @@ class WindowNewExercise(BasicWidget):
         self.button_add_measure = QPushButton("Add Measure", self.measure_buttons)
         self.measure_buttons.layout().addWidget(self.button_add_measure)
         self.button_add_measure.clicked.connect(self.add_measure_action)
+        self.radio_button_sets = QRadioButton("Sets Measure", self.measure_buttons)
+        self.measure_buttons.layout().addWidget(self.radio_button_sets)
+        self.radio_button_sets.toggled.connect(self.sets_measure_action)
 
         self.table_measures = QTableWidget(0, 3, self)
         self.layout().addWidget(self.table_measures)
@@ -424,8 +448,16 @@ class WindowNewExercise(BasicWidget):
         self.finish_buttons.layout().addWidget(self.button_add_exercise)
         self.button_add_exercise.clicked.connect(self.button_add_exercise_action)
 
+        self.error_message = QErrorMessage(self)
+
     def add_measure_action(self):
         self.window_add_measure.show()
+
+    def sets_measure_action(self, checked):
+        if checked:
+            self.measures.append(Measure("Sets", 5, False))
+        else:
+            self.measures.remove(Measure("Sets", 5, False))
 
     def closeEvent(self, event: QCloseEvent) -> None:
         self.line_edit_name.setText("")
@@ -440,16 +472,29 @@ class WindowNewExercise(BasicWidget):
         self.close()
 
     def button_add_exercise_action(self):
-        valid_text = True
+        valid_input = True
         if self.line_edit_name.text() == "":
             self.line_edit_name.setStyleSheet("QLineEdit {background: rgb(255, 0, 0)}")
-            valid_text = False
-        if valid_text:
+            valid_input = False
+        per_set_consistency = True
+        for measure in self.measures:
+            if measure.type_id == 5:
+                per_set_consistency = True
+                break
+            if measure.per_set:
+                per_set_consistency = False
+        if not per_set_consistency:
+            self.error_message.setWindowTitle("Cannot Add New Exercise!")
+            self.error_message.showMessage("A measure is specified as 'per set', but the measure "
+                                           "'sets' was not selected.")
+            return
+        if valid_input:
             exercise = self.create_exercise_from_input()
             exercise_id = self.super_parent().database.new_exercise(exercise)
             for measure in self.measures:
                 self.super_parent().database.new_measure(measure, exercise_id)
             self.close()
+            self.super_parent().update_table_exercises()
 
     def remove_style_sheet_line_edit_name(self):
         self.line_edit_name.setStyleSheet("")

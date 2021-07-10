@@ -140,9 +140,12 @@ class Database:
             self.cursor.execute(f"SELECT id, name FROM {DATABASE_MUSCLE_GROUP};")
             return self.cursor.fetchall()
 
-    def get_measure_types(self):
+    def get_measure_types(self, without_sets=False):
         with self.connection:
-            self.cursor.execute(f"SELECT id, name, unit FROM {DATABASE_MEASURE_TYPE};")
+            if without_sets:
+                self.cursor.execute("SELECT id, name, unit FROM measure_type WHERE id != 5;")
+            else:
+                self.cursor.execute(f"SELECT id, name, unit FROM measure_type;")
             return self.cursor.fetchall()
 
     def get_measure_type_for_id(self, measure_type_id: int):
@@ -195,3 +198,10 @@ class Database:
     def get_measure_type_string_for_id(self, measure_type_id: int):
         measure_type_id, name, unit = self.get_measure_type_for_id(measure_type_id)
         return f"{name} ({unit})"
+
+    def get_exercise_table_rows(self):
+        with self.connection:
+            self.cursor.execute("SELECT e.name, e.comment, e.url, c.name, d.name "
+                                "FROM exercise e, difficulty d, category c "
+                                "WHERE e.category_id = c.id AND e.difficulty_id = d.id;")
+            return self.cursor.fetchall()

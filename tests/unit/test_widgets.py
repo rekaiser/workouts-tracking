@@ -1,12 +1,12 @@
 from PySide6.QtWidgets import (QSplitter, QLayout, QHBoxLayout, QWidget, QVBoxLayout, QTableWidget,
                                QLabel, QPushButton, QGridLayout, QFormLayout, QLineEdit,
-                               QFileDialog, QPlainTextEdit, QCheckBox, QComboBox,
+                               QFileDialog, QPlainTextEdit, QCheckBox, QRadioButton,
                                )
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon
 
 from workouts_tracking.gui import (HLineSunken, ComboboxCategory, GroupBoxDatabase, ComboboxMuscles,
-                                   GroupBoxWorkout, GroupBoxExercise, GroupBoxAvailableExercises,
+                                   GroupBoxWorkout, GroupBoxExercise, GroupBoxExercises,
                                    ComboboxDifficulty, WindowNewExercise, GroupBoxMuscleGroups,
                                    WindowAddMeasure, ComboboxMeasureTypes,
                                    )
@@ -66,7 +66,7 @@ class TestGuiLayout:
         list_widgets_widget_classes_right = [
             (cwf.widget_right.groupbox_database, GroupBoxDatabase),
             (cwf.widget_right.groupbox_workout, GroupBoxWorkout),
-            (cwf.widget_right.groupbox_available_exercises, GroupBoxAvailableExercises),
+            (cwf.widget_right.groupbox_exercises, GroupBoxExercises),
             (cwf.widget_right.groupbox_exercise, GroupBoxExercise),
         ]
         for i, (widget, widget_class) in enumerate(list_widgets_widget_classes_right):
@@ -84,7 +84,7 @@ class TestGuiLayout:
         cwf = central_widget_fixture
         assert cwf.widget_right.groupbox_database.title() == "Database Actions"
         assert cwf.widget_right.groupbox_workout.title() == "Workout Actions"
-        assert cwf.widget_right.groupbox_available_exercises.title() == "Available Exercises"
+        assert cwf.widget_right.groupbox_exercises.title() == "Available Exercises"
         assert cwf.widget_right.groupbox_exercise.title() == "Exercise Actions"
 
     def test_groupbox_database(self, groupbox_database_fixture):
@@ -153,11 +153,27 @@ class TestGuiLayout:
         assert isinstance(gaf.layout(), QGridLayout)
 
         list_widgets_widget_classes_available_exercises = [
-            (gaf.table_available_exercises, QTableWidget),
+            (gaf.table_exercises, QTableWidget),
         ]
         for i, (widget, widget_class) in enumerate(list_widgets_widget_classes_available_exercises):
             assert isinstance(widget, widget_class)
             assert isinstance(gaf.layout().itemAt(i).widget(), widget_class)
+
+    def test_table_exercises_shows_exercises(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        exercise = Exercise("Test Exercise", "comm", "url.de", 1, 1, [2, 3, 6])
+        mwf.database.new_exercise(exercise)
+        mwf.update_table_exercises()
+        header_names = ["Exercise Name", "Comment", "Url", "Category", "Difficulty"]
+        table_exercises = mwf.widget_main.widget_right.groupbox_exercises.table_exercises
+        for i, header_name in enumerate(header_names):
+            assert table_exercises.horizontalHeaderItem(i).text() == header_name
+        assert table_exercises.item(0, 0).text() == "Test Exercise"
+        assert table_exercises.item(0, 1).text() == "comm"
+        assert table_exercises.item(0, 2).text() == "url.de"
+        assert table_exercises.item(0, 3).text() == "strength training"
+        assert table_exercises.item(0, 4).text() == "very easy"
 
 
 class TestWindowAddMeasure:
@@ -194,7 +210,7 @@ class TestWindowAddMeasure:
         assert wam.label_type.text() == "Measure Type:"
         type_items = [wam.combobox_type.itemText(i) for i in range(wam.combobox_type.count())]
         type_names = [f"{entry[1]} ({entry[2]})" for entry in DATABASE_MEASURE_TYPE_ENTRIES]
-        assert len(type_names) == len(type_items)
+        assert len(type_names) - 1 == len(type_items)
         for item in type_items:
             assert item in type_names
 
@@ -219,12 +235,12 @@ class TestWindowAddMeasure:
         mwf.window_new_exercise.add_measure_action()
         assert wam.isVisible()
         wam.line_edit_name.setText("Test name")
-        wam.combobox_type.setCurrentIndex(4)
+        wam.combobox_type.setCurrentIndex(2)
         wam.button_add.click()
         assert not wam.isVisible()
-        assert mwf.window_new_exercise.measures[0] == Measure("Test name", 5, False)
+        assert mwf.window_new_exercise.measures[0] == Measure("Test name", 3, False)
         assert mwf.window_new_exercise.table_measures.item(0, 0).text() == "Test name"
-        assert mwf.window_new_exercise.table_measures.item(0, 1).text() == "sets (integer)"
+        assert mwf.window_new_exercise.table_measures.item(0, 1).text() == "time (mm:ss)"
         assert mwf.window_new_exercise.table_measures.item(0, 2).text() == "no"
 
     def test_discard_button(self, main_window_fixture, database_filename_fixture):
@@ -290,7 +306,19 @@ class TestWindowNewExercise:
             assert isinstance(widget, widget_class)
             assert isinstance(wne.new_exercise_form.layout().itemAt(i).widget(), widget_class)
 
-    def test_inner_layout2(self, main_window_fixture):
+    def test_inner_layout(self, main_window_fixture):
+        wne = main_window_fixture.window_new_exercise
+        assert isinstance(wne.measure_buttons, QWidget)
+        list_widgets_widget_classes = [
+            (wne.button_delete_measure, QPushButton),
+            (wne.button_add_measure, QPushButton),
+            (wne.radio_button_sets, QRadioButton),
+        ]
+        for i, (widget, widget_class) in enumerate(list_widgets_widget_classes):
+            assert isinstance(widget, widget_class)
+            assert isinstance(wne.measure_buttons.layout().itemAt(i).widget(), widget_class)
+
+    def test_inner_layout3(self, main_window_fixture):
         wne = main_window_fixture.window_new_exercise
         assert isinstance(wne.finish_buttons.layout(), QHBoxLayout)
         list_widgets_widget_classes = [
@@ -332,6 +360,7 @@ class TestWindowNewExercise:
 
         assert wne.button_add_measure.text() == "Add Measure"
         assert wne.button_delete_measure.text() == "Delete Measure"
+        assert wne.radio_button_sets.text() == "Sets Measure"
 
         header_names = ["measure name", "measure type", "per set"]
         for i, header_name in enumerate(header_names):
@@ -440,6 +469,7 @@ class TestWindowNewExercise:
         wne = mwf.window_new_exercise
         wne.measures.append(Measure("Measure 1", 2, False))
         wne.measures.append(Measure("Measure 2", 3, True))
+        wne.measures.append(Measure("Measure 3", 5, False))
         wne.line_edit_name.setText("Exercise 1")
         wne.line_edit_url.setText("url.de")
         wne.text_edit_comment.setPlainText("Some Comment")
@@ -453,6 +483,28 @@ class TestWindowNewExercise:
         assert (exercise_id, 3) in mwf.database.get_exercise_muscle_groups()
         assert ("Measure 1", 2, 0, exercise_id) in mwf.database.get_measures(with_id=False)
         assert ("Measure 2", 3, 1, exercise_id) in mwf.database.get_measures(with_id=False)
+
+    def test_add_exercise_without_measure_sets_with_measure_per_set(self,
+                                                                    main_window_fixture,
+                                                                    database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        wne = mwf.window_new_exercise
+        wne.measures.append(Measure("Measure 1", 0, True))
+        wne.line_edit_name.setText("Test Name")
+        wne.button_add_exercise.click()
+        assert ("Test Name", "", "", 1, 1) not in mwf.database.get_exercises(with_id=False)
+        assert wne.error_message.isVisible()
+        wne.measures = []
+
+    def test_add_sets_measure(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        wne = mwf.window_new_exercise
+        wne.radio_button_sets.toggle()
+        assert Measure("Sets", 5, False) in wne.measures
+        wne.radio_button_sets.toggle()
+        assert Measure("Sets", 5, False) not in wne.measures
 
 
 class TestDatabaseFileDialogs:
