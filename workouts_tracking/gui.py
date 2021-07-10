@@ -231,6 +231,13 @@ class GroupBoxWorkout(QGroupBox, BasicWidget):
         self.layout().addWidget(self.button_finish)
 
     def start_workout_action(self):
+        if self.super_parent().database is None:
+            self.super_parent().error_message.setWindowTitle("Cannot Start Workout!")
+            self.super_parent().error_message.showMessage("No database is loaded. "
+                                                          "Please create one with 'New "
+                                                          "Database' or load one with "
+                                                          "'Load Database'!")
+            return
         self.switch_button_ability()
         self.parent().switch_button_ability(during_workout=True)
 

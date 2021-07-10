@@ -118,7 +118,8 @@ class TestGuiLayout:
             assert isinstance(widget, widget_class)
             assert isinstance(gwf.layout().itemAt(i).widget(), widget_class)
 
-    def test_workout_buttons(self, main_window_fixture,  groupbox_workout_fixture):
+    def test_workout_buttons(self, main_window_fixture,  groupbox_workout_fixture,
+                             database_filename_fixture):
         mwf = main_window_fixture
         gwf = groupbox_workout_fixture
         list_button_texts = ["Start Workout", "Finish Workout"]
@@ -139,6 +140,9 @@ class TestGuiLayout:
         for button in buttons_to_be_enabled:
             assert not button.isEnabled()
         assert gwf.button_start.isEnabled() and not gwf.button_finish.isEnabled()
+        gwf.button_start.click()
+        assert mwf.error_message.isVisible()
+        mwf.new_database(database_filename_fixture)
         gwf.button_start.click()
         for button in buttons_to_be_disabled:
             assert not button.isEnabled()
