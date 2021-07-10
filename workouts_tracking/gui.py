@@ -176,6 +176,23 @@ class RightWidget(BasicWidget):
         self.groupbox_exercise = GroupBoxExercise("Exercise Actions", self)
         self.layout().addWidget(self.groupbox_exercise)
 
+        self.buttons_disabled_during_workout = [
+            self.groupbox_database.button_new,
+            self.groupbox_database.button_load,
+            self.groupbox_database.button_close,
+            self.groupbox_exercise.button_new,
+            self.groupbox_exercise.button_edit,
+        ]
+        self.buttons_enabled_during_workout = [
+            self.groupbox_exercise.button_perform,
+        ]
+
+    def switch_button_ability(self, during_workout=True):
+        for button in self.buttons_disabled_during_workout:
+            button.setEnabled(not during_workout)
+        for button in self.buttons_enabled_during_workout:
+            button.setEnabled(during_workout)
+
 
 class HLineSunken(QFrame, BasicWidget):
     def __init__(self, parent):
@@ -206,12 +223,20 @@ class GroupBoxWorkout(QGroupBox, BasicWidget):
         super().__init__(title, parent)
         self.setLayout(QHBoxLayout(self))
         self.button_start = QPushButton("Start Workout", self)
-        self.button_start.clicked.connect(self.switch_button_ability)
+        self.button_start.clicked.connect(self.start_workout_action)
         self.layout().addWidget(self.button_start)
         self.button_finish = QPushButton("Finish Workout", self)
         self.button_finish.setDisabled(True)
-        self.button_finish.clicked.connect(self.switch_button_ability)
+        self.button_finish.clicked.connect(self.finish_workout_action)
         self.layout().addWidget(self.button_finish)
+
+    def start_workout_action(self):
+        self.switch_button_ability()
+        self.parent().switch_button_ability(during_workout=True)
+
+    def finish_workout_action(self):
+        self.switch_button_ability()
+        self.parent().switch_button_ability(during_workout=False)
 
     def switch_button_ability(self):
         if self.button_start.isEnabled() and not self.button_finish.isEnabled():
@@ -228,6 +253,7 @@ class GroupBoxExercise(QGroupBox, BasicWidget):
         self.setLayout(QHBoxLayout(self))
         self.button_perform = QPushButton("Perform Exercise", self)
         self.layout().addWidget(self.button_perform)
+        self.button_perform.setEnabled(False)
         self.button_new = QPushButton("New Exercise", self)
         self.button_new.clicked.connect(self.super_parent().new_exercise_action)
         self.layout().addWidget(self.button_new)

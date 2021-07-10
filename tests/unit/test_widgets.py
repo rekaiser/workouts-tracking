@@ -118,15 +118,38 @@ class TestGuiLayout:
             assert isinstance(widget, widget_class)
             assert isinstance(gwf.layout().itemAt(i).widget(), widget_class)
 
-    def test_workout_buttons(self, groupbox_workout_fixture):
+    def test_workout_buttons(self, main_window_fixture,  groupbox_workout_fixture):
+        mwf = main_window_fixture
         gwf = groupbox_workout_fixture
         list_button_texts = ["Start Workout", "Finish Workout"]
+        buttons_to_be_disabled = [
+            mwf.widget_main.widget_right.groupbox_database.button_new,
+            mwf.widget_main.widget_right.groupbox_database.button_load,
+            mwf.widget_main.widget_right.groupbox_database.button_close,
+            mwf.widget_main.widget_right.groupbox_exercise.button_new,
+            mwf.widget_main.widget_right.groupbox_exercise.button_edit,
+        ]
+        buttons_to_be_enabled = [
+            mwf.widget_main.widget_right.groupbox_exercise.button_perform,
+        ]
         for i, button_text in enumerate(list_button_texts):
             assert gwf.layout().itemAt(i).widget().text() == button_text
+        for button in buttons_to_be_disabled:
+            assert button.isEnabled()
+        for button in buttons_to_be_enabled:
+            assert not button.isEnabled()
         assert gwf.button_start.isEnabled() and not gwf.button_finish.isEnabled()
         gwf.button_start.click()
+        for button in buttons_to_be_disabled:
+            assert not button.isEnabled()
+        for button in buttons_to_be_enabled:
+            assert button.isEnabled()
         assert not gwf.button_start.isEnabled() and gwf.button_finish.isEnabled()
         gwf.button_finish.click()
+        for button in buttons_to_be_disabled:
+            assert button.isEnabled()
+        for button in buttons_to_be_enabled:
+            assert not button.isEnabled()
         assert gwf.button_start.isEnabled() and not gwf.button_finish.isEnabled()
 
     def test_groupbox_exercise(self, groupbox_exercise_fixture):
