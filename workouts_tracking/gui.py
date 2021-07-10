@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout
                                QVBoxLayout, QTableWidget, QLabel, QFrame, QGroupBox, QComboBox,
                                QPushButton, QGridLayout, QFormLayout, QLineEdit,
                                QFileDialog, QErrorMessage, QPlainTextEdit, QCheckBox,
-                               QTableWidgetItem,
+                               QTableWidgetItem, QRadioButton,
                                )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent, QIcon
@@ -322,7 +322,7 @@ class ComboboxMeasureTypes(QComboBox, BasicWidget):
     def add_items_from_database(self):
         database = self.super_parent().database
         if database:
-            measure_types = database.get_measure_types()
+            measure_types = database.get_measure_types(without_sets=True)
             for index, (measure_type_id, measure_type_name, measure_type_unit) \
                     in enumerate(measure_types):
                 self.addItem(f"{measure_type_name} ({measure_type_unit})")
@@ -427,6 +427,9 @@ class WindowNewExercise(BasicWidget):
         self.button_add_measure = QPushButton("Add Measure", self.measure_buttons)
         self.measure_buttons.layout().addWidget(self.button_add_measure)
         self.button_add_measure.clicked.connect(self.add_measure_action)
+        self.radio_button_sets = QRadioButton("Sets Measure", self.measure_buttons)
+        self.measure_buttons.layout().addWidget(self.radio_button_sets)
+        self.radio_button_sets.toggled.connect(self.sets_measure_action)
 
         self.table_measures = QTableWidget(0, 3, self)
         self.layout().addWidget(self.table_measures)
@@ -445,8 +448,16 @@ class WindowNewExercise(BasicWidget):
         self.finish_buttons.layout().addWidget(self.button_add_exercise)
         self.button_add_exercise.clicked.connect(self.button_add_exercise_action)
 
+        self.error_message = QErrorMessage(self)
+
     def add_measure_action(self):
         self.window_add_measure.show()
+
+    def sets_measure_action(self, checked):
+        if checked:
+            self.measures.append(Measure("Sets", 5, False))
+        else:
+            self.measures.remove(Measure("Sets", 5, False))
 
     def closeEvent(self, event: QCloseEvent) -> None:
         self.line_edit_name.setText("")
@@ -461,11 +472,23 @@ class WindowNewExercise(BasicWidget):
         self.close()
 
     def button_add_exercise_action(self):
-        valid_text = True
+        valid_input = True
         if self.line_edit_name.text() == "":
             self.line_edit_name.setStyleSheet("QLineEdit {background: rgb(255, 0, 0)}")
-            valid_text = False
-        if valid_text:
+            valid_input = False
+        per_set_consistency = True
+        for measure in self.measures:
+            if measure.type_id == 5:
+                per_set_consistency = True
+                break
+            if measure.per_set:
+                per_set_consistency = False
+        if not per_set_consistency:
+            self.error_message.setWindowTitle("Cannot Add New Exercise!")
+            self.error_message.showMessage("A measure is specified as 'per set', but the measure "
+                                           "'sets' was not selected.")
+            return
+        if valid_input:
             exercise = self.create_exercise_from_input()
             exercise_id = self.super_parent().database.new_exercise(exercise)
             for measure in self.measures:
