@@ -460,7 +460,7 @@ class WindowNewExercise(BasicWidget):
         self.button_add_measure = QPushButton("Add Measure", self.measure_buttons)
         self.measure_buttons.layout().addWidget(self.button_add_measure)
         self.button_add_measure.clicked.connect(self.add_measure_action)
-        self.radio_button_sets = QRadioButton("Sets Measure", self.measure_buttons)
+        self.radio_button_sets = QRadioButton("Add Sets Measure", self.measure_buttons)
         self.measure_buttons.layout().addWidget(self.radio_button_sets)
         self.radio_button_sets.toggled.connect(self.sets_measure_action)
 
