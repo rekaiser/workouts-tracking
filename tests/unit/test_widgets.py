@@ -387,7 +387,7 @@ class TestWindowNewExercise:
 
         assert wne.button_add_measure.text() == "Add Measure"
         assert wne.button_delete_measure.text() == "Delete Measure"
-        assert wne.radio_button_sets.text() == "Sets Measure"
+        assert wne.radio_button_sets.text() == "Add Sets Measure"
 
         header_names = ["measure name", "measure type", "per set"]
         for i, header_name in enumerate(header_names):
