@@ -59,6 +59,8 @@ class MainWindow(QMainWindow):
 
         self.window_new_exercise = WindowNewExercise(self)
 
+        self.window_perform_exercise = WindowPerformExercise(self)
+
         self.file_dialog_new_database = QFileDialog(self)
 
         self.file_dialog_load_database = QFileDialog(self)
@@ -607,3 +609,13 @@ class GroupBoxMuscleGroups(QGroupBox, BasicWidget):
             if checkbox.isChecked():
                 ids.append(muscle_group_id)
         return ids
+
+
+class WindowPerformExercise(BasicWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setWindowFlag(Qt.Window)
+        self.setWindowFlag(Qt.WindowStaysOnTopHint)
+        self.setWindowTitle("Perform Exercise")
+        self.setWindowModality(Qt.WindowModal)
+        self.setLayout(QVBoxLayout(self))

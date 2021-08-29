@@ -8,7 +8,7 @@ from PySide6.QtGui import QIcon
 from workouts_tracking.gui import (HLineSunken, ComboboxCategory, GroupBoxDatabase, ComboboxMuscles,
                                    GroupBoxWorkout, GroupBoxExercise, GroupBoxExercises,
                                    ComboboxDifficulty, WindowNewExercise, GroupBoxMuscleGroups,
-                                   WindowAddMeasure, ComboboxMeasureTypes,
+                                   WindowAddMeasure, ComboboxMeasureTypes, WindowPerformExercise,
                                    )
 
 from workouts_tracking.constants import (
@@ -552,3 +552,13 @@ class TestDatabaseFileDialogs:
         assert mwf.database_path is None
         assert mwf.database is None
         assert mwf.windowTitle() == "Workouts Tracking"
+
+
+class TestWindowPerformExercise:
+    def test_existence(self, main_window_fixture):
+        wpe = main_window_fixture.window_perform_exercise
+        assert isinstance(wpe, WindowPerformExercise)
+        assert wpe.windowTitle() == "Perform Exercise"
+        assert wpe.isModal()
+        assert bool(wpe.windowFlags() & Qt.Window)
+        assert bool(wpe.windowFlags() & Qt.WindowStaysOnTopHint)
