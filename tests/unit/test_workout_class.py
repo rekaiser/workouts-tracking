@@ -25,7 +25,7 @@ class TestCurrentWorkout:
         assert cw.start_time is None
         assert cw.end_time is None
         assert cw.comment is None
-        assert cw.open is False
+        assert cw.status == "inactive"
 
     def test_start_workout(self):
         cw = CurrentWorkout()
@@ -36,7 +36,7 @@ class TestCurrentWorkout:
         start_time2 = dt.datetime.now().time()
         assert date == cw.date
         assert start_time1 < cw.start_time < start_time2
-        assert cw.open
+        assert cw.status == "active"
         with pytest.raises(ProcedureError):
             cw.start_workout()
 
@@ -44,3 +44,9 @@ class TestCurrentWorkout:
         cw = CurrentWorkout()
         with pytest.raises(ProcedureError):
             cw.end_workout()
+        cw.start_workout()
+        end_time1 = dt.datetime.now().time()
+        cw.end_workout()
+        end_time2 = dt.datetime.now().time()
+        assert end_time1 < cw.end_time < end_time2
+        assert cw.status == "finished"
