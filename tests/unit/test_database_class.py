@@ -242,3 +242,7 @@ class TestDatabaseMethods:
         exercise_id = test_database.new_exercise(test_exercise)
         exercise_rows = test_database.get_exercise_table_rows()
         assert exercise_rows == [("hu", "asas", "ooo.de", "strength training", "easy")]
+
+    def test_new_workout(self, tmp_path):
+        test_database = Database(tmp_path / "test_database.db")
+
