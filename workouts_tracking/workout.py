@@ -48,4 +48,3 @@ class CurrentWorkout:
             raise ProcedureError("The Workout cannot be created from the CurrentWorkout as it has"
                                  "not been finished yet.")
         return workout
-

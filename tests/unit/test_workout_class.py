@@ -50,3 +50,30 @@ class TestCurrentWorkout:
         end_time2 = dt.datetime.now().time()
         assert end_time1 < cw.end_time < end_time2
         assert cw.status == "finished"
+
+    def test_set_comment(self):
+        cw = CurrentWorkout()
+        cw.set_comment("Test comment")
+        assert cw.comment == "Test comment"
+
+    def test_create_workout(self):
+        cw = CurrentWorkout()
+        with pytest.raises(ProcedureError):
+            cw.create_workout()
+        current_datetime = dt.datetime.now()
+        date = current_datetime.date()
+        start_time1 = current_datetime.time()
+        cw.start_workout()
+        start_time2 = dt.datetime.now().time()
+        with pytest.raises(ProcedureError):
+            cw.create_workout()
+        cw.set_comment("Test comment")
+        end_time1 = dt.datetime.now().time()
+        cw.end_workout()
+        end_time2 = dt.datetime.now().time()
+
+        workout = cw.create_workout()
+        assert date == workout.date
+        assert start_time1 < workout.start_time < start_time2
+        assert end_time1 < workout.end_time < end_time2
+        assert workout.comment == "Test comment"
