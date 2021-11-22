@@ -40,3 +40,12 @@ class CurrentWorkout:
 
     def set_comment(self, comment: str):
         self.comment = comment
+
+    def create_workout(self):
+        if self.status == "finished":
+            workout = Workout(self.date, self.start_time, self.end_time, self.comment)
+        else:
+            raise ProcedureError("The Workout cannot be created from the CurrentWorkout as it has"
+                                 "not been finished yet.")
+        return workout
+
