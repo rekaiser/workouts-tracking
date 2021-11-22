@@ -23,7 +23,7 @@ class CurrentWorkout:
 
     def start_workout(self):
         if self.status != "inactive":
-            raise ProcedureError("The CurrenWorkout has already been started. Cannot start again.")
+            raise ProcedureError("The CurrentWorkout has already been started. Cannot start again.")
         self.date = dt.date.today()
         self.start_time = dt.datetime.now().time()
         self.status = "active"
@@ -32,5 +32,8 @@ class CurrentWorkout:
         if self.status not in ["active", "paused"]:
             raise ProcedureError("The CurrentWorkout has not yet been started. Cannot end the"
                                  " workout.")
+        if self.status == "finished":
+            raise ProcedureError("The CurrentWorkout was already finished. Cannot end the workout"
+                                 "again.")
         self.end_time = dt.datetime.now().time()
         self.status = "finished"
