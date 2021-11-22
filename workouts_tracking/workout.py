@@ -37,3 +37,6 @@ class CurrentWorkout:
                                  "again.")
         self.end_time = dt.datetime.now().time()
         self.status = "finished"
+
+    def set_comment(self, comment: str):
+        self.comment = comment
