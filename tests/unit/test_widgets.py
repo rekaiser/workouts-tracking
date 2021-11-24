@@ -564,6 +564,15 @@ class TestWindowPerformExercise:
         assert bool(wpe.windowFlags() & Qt.Window)
         assert bool(wpe.windowFlags() & Qt.WindowStaysOnTopHint)
 
+    def test_perform_exercise_button(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        mwf.widget_main.widget_right.groupbox_workout.button_start.click()
+        mwf.widget_main.widget_right.groupbox_exercise.button_perform.click()
+        assert mwf.window_perform_exercise.isVisible()
+        mwf.widget_main.widget_right.groupbox_workout.button_finish.click()
+        mwf.close_database()
+
 
 class TestWorkoutActions:
     def test_start_workout_without_database(self, main_window_fixture):

@@ -266,6 +266,7 @@ class GroupBoxExercise(QGroupBox, BasicWidget):
         super().__init__(title, parent)
         self.setLayout(QHBoxLayout(self))
         self.button_perform = QPushButton("Perform Exercise", self)
+        self.button_perform.clicked.connect(self.button_perform_action)
         self.layout().addWidget(self.button_perform)
         self.button_perform.setEnabled(False)
         self.button_new = QPushButton("New Exercise", self)
@@ -273,6 +274,9 @@ class GroupBoxExercise(QGroupBox, BasicWidget):
         self.layout().addWidget(self.button_new)
         self.button_edit = QPushButton("Edit Exercise", self)
         self.layout().addWidget(self.button_edit)
+
+    def button_perform_action(self):
+        self.super_parent().window_perform_exercise.show()
 
 
 class GroupBoxExercises(QGroupBox, BasicWidget):
