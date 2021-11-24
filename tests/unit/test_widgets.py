@@ -19,6 +19,7 @@ from workouts_tracking.constants import (
 )
 from workouts_tracking.exercise import Exercise
 from workouts_tracking.measure import Measure
+from workouts_tracking.workout import CurrentWorkout
 
 
 class TestMainProperties:
@@ -562,3 +563,31 @@ class TestWindowPerformExercise:
         assert wpe.isModal()
         assert bool(wpe.windowFlags() & Qt.Window)
         assert bool(wpe.windowFlags() & Qt.WindowStaysOnTopHint)
+
+
+class TestWorkoutActions:
+    def test_start_workout_without_database(self, main_window_fixture):
+        mwf = main_window_fixture
+        mwf.close_database()
+        assert mwf.database is None
+        mwf.widget_main.widget_right.groupbox_workout.button_start.click()
+        assert mwf.error_message.isVisible()
+        assert mwf.error_message.windowTitle() == "Cannot Start Workout!"
+        assert mwf.error_message.layout().itemAt(1).widget().toPlainText() == \
+               "No database is loaded. Please create one with 'New Database' or load one with " \
+               "'Load Database'!"
+
+    def test_start_workout_with_database(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        mwf.widget_main.widget_right.groupbox_workout.button_start.click()
+        assert isinstance(mwf.widget_main.widget_right.groupbox_workout.current_workout,
+                          CurrentWorkout)
+        assert mwf.widget_main.widget_right.groupbox_workout.current_workout.status == "active"
+
+    def test_finish_workout(self, main_window_fixture, database_filename_fixture):
+        mwf = main_window_fixture
+        mwf.new_database(database_filename_fixture)
+        mwf.widget_main.widget_right.groupbox_workout.button_start.click()
+        mwf.widget_main.widget_right.groupbox_workout.button_finish.click()
+        assert mwf.widget_main.widget_right.groupbox_workout.current_workout.status == "finished"

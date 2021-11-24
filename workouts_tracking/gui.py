@@ -13,6 +13,7 @@ from .constants import APPLICATION_NAME, INSTALL_DIR
 from .database import Database
 from .exercise import Exercise
 from .measure import Measure
+from .workout import CurrentWorkout
 
 
 def create_app(sys_argv):
@@ -231,6 +232,7 @@ class GroupBoxWorkout(QGroupBox, BasicWidget):
         self.button_finish.setDisabled(True)
         self.button_finish.clicked.connect(self.finish_workout_action)
         self.layout().addWidget(self.button_finish)
+        self.current_workout = None
 
     def start_workout_action(self):
         if self.super_parent().database is None:
@@ -240,10 +242,13 @@ class GroupBoxWorkout(QGroupBox, BasicWidget):
                                                           "Database' or load one with "
                                                           "'Load Database'!")
             return
+        self.current_workout = CurrentWorkout()
+        self.current_workout.start_workout()
         self.switch_button_ability()
         self.parent().switch_button_ability(during_workout=True)
 
     def finish_workout_action(self):
+        self.current_workout.end_workout()
         self.switch_button_ability()
         self.parent().switch_button_ability(during_workout=False)
 
