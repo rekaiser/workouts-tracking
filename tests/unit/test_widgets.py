@@ -643,6 +643,18 @@ class TestWindowPerformExercise:
             assert isinstance(wpe.widget_pages[0].layout().itemAt(i).widget(), widget_class)
             assert isinstance(widget, widget_class)
 
+    def test_layout_widget_page2(self, main_window_fixture):
+        wpe = main_window_fixture.window_perform_exercise
+        assert isinstance(wpe.widget_pages[2].layout(), QVBoxLayout)
+        list_widgets_widget_classes = [
+            (wpe.label_title_page2, QLabel),
+            (wpe.label_comment_page2, QLabel),
+            (wpe.text_edit_comment, QPlainTextEdit),
+        ]
+        for i, (widget, widget_class) in enumerate(list_widgets_widget_classes):
+            assert isinstance(widget, widget_class)
+            assert isinstance(wpe.widget_pages[2].layout().itemAt(i).widget(), widget_class)
+
 
 class TestWorkoutActions:
     def test_start_workout_without_database(self, main_window_fixture):

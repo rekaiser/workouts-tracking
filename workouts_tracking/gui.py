@@ -656,6 +656,15 @@ class WindowPerformExercise(BasicWidget):
         self.widget_pages[0].layout().addWidget(self.label_title_page0)
         self.widget_pages[0].layout().addWidget(self.list_widget_exercises)
 
+        self.widget_pages[2].setLayout(QVBoxLayout(self.widget_pages[0]))
+        self.label_title_page2 = QLabel("Finishing Exercise", self.widget_pages[2])
+        self.label_comment_page2 = QLabel("Leave a comment on the performed exercise:",
+                                          self.widget_pages[2])
+        self.text_edit_comment = QPlainTextEdit(self.widget_pages[2])
+        self.widget_pages[2].layout().addWidget(self.label_title_page2)
+        self.widget_pages[2].layout().addWidget(self.label_comment_page2)
+        self.widget_pages[2].layout().addWidget(self.text_edit_comment)
+
         self.adjust_buttons()
 
     def adjust_buttons(self):
