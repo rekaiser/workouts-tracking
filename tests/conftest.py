@@ -72,3 +72,9 @@ def basic_database_fixture(tmp_path):
     connection = sql.connect(tmp_path / "basic_database.db")
     cursor = connection.cursor()
     yield connection, cursor
+
+
+@pytest.fixture()
+def sample_database_filename_fixture(tmp_path):
+    shutil.copy(TESTS_DIR / "database" / "sample_database.db", tmp_path / "sample_database.db")
+    yield tmp_path / "sample_database.db"

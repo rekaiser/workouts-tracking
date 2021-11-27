@@ -10,6 +10,7 @@ from workouts_tracking.gui import (HLineSunken, ComboboxCategory, GroupBoxDataba
                                    GroupBoxWorkout, GroupBoxExercise, GroupBoxExercises,
                                    ComboboxDifficulty, WindowNewExercise, GroupBoxMuscleGroups,
                                    WindowAddMeasure, ComboboxMeasureTypes, WindowPerformExercise,
+                                   ListWidgetExercises,
                                    )
 
 from workouts_tracking.constants import (
@@ -638,7 +639,7 @@ class TestWindowPerformExercise:
         assert isinstance(wpe.widget_pages[0].layout(), QVBoxLayout)
         list_widgets_widget_classes = [
             (wpe.label_title_page0, QLabel),
-            (wpe.list_widget_exercises, QListWidget),
+            (wpe.list_widget_exercises, ListWidgetExercises),
         ]
         for i, (widget, widget_class) in enumerate(list_widgets_widget_classes):
             assert isinstance(wpe.widget_pages[0].layout().itemAt(i).widget(), widget_class)
@@ -655,6 +656,16 @@ class TestWindowPerformExercise:
         for i, (widget, widget_class) in enumerate(list_widgets_widget_classes):
             assert isinstance(widget, widget_class)
             assert isinstance(wpe.widget_pages[2].layout().itemAt(i).widget(), widget_class)
+
+    def test_list_widget_exercises(self, main_window_fixture, sample_database_filename_fixture):
+        main_window_fixture.load_database(sample_database_filename_fixture)
+        main_window_fixture.widget_main.widget_right.groupbox_workout.button_start.click()
+        main_window_fixture.widget_main.widget_right.groupbox_exercise.button_perform.click()
+        wpe = main_window_fixture.window_perform_exercise
+        exercise_texts = ["Running", "Push ups", "Siz ups"]
+        for i, exercise_text in enumerate(exercise_texts):
+            assert wpe.list_widget_exercises.item(i).text() == exercise_text
+        main_window_fixture.widget_main.widget_right.groupbox_workout.button_finish.click()
 
 
 class TestWorkoutActions:

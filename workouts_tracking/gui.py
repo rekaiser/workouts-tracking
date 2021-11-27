@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout
                                QPushButton, QGridLayout, QFormLayout, QLineEdit,
                                QFileDialog, QErrorMessage, QPlainTextEdit, QCheckBox,
                                QTableWidgetItem, QRadioButton, QStackedWidget, QListWidget,
+                               QListWidgetItem,
                                )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent, QIcon
@@ -246,6 +247,9 @@ class GroupBoxWorkout(QGroupBox, BasicWidget):
         self.current_workout.start_workout()
         self.switch_button_ability()
         self.parent().switch_button_ability(during_workout=True)
+        self.super_parent().window_perform_exercise.list_widget_exercises.populate_exercises_list(
+            self.super_parent().database.get_exercises(with_id=True, order_by_id=True)
+        )
 
     def finish_workout_action(self):
         self.current_workout.end_workout()
@@ -623,6 +627,9 @@ class GroupBoxMuscleGroups(QGroupBox, BasicWidget):
 class WindowPerformExercise(BasicWidget):
     def __init__(self, parent):
         super().__init__(parent)
+
+        self.selected_exercise_id = None
+
         self.setWindowFlag(Qt.Window)
         self.setWindowFlag(Qt.WindowStaysOnTopHint)
         self.setWindowTitle("Perform Exercise")
@@ -652,11 +659,11 @@ class WindowPerformExercise(BasicWidget):
 
         self.widget_pages[0].setLayout(QVBoxLayout(self.widget_pages[0]))
         self.label_title_page0 = QLabel("Choose one exercise to perform:", self.widget_pages[0])
-        self.list_widget_exercises = QListWidget(self.widget_pages[0])
+        self.list_widget_exercises = ListWidgetExercises(self.widget_pages[0])
         self.widget_pages[0].layout().addWidget(self.label_title_page0)
         self.widget_pages[0].layout().addWidget(self.list_widget_exercises)
 
-        self.widget_pages[2].setLayout(QVBoxLayout(self.widget_pages[0]))
+        self.widget_pages[2].setLayout(QVBoxLayout(self.widget_pages[2]))
         self.label_title_page2 = QLabel("Finishing Exercise", self.widget_pages[2])
         self.label_comment_page2 = QLabel("Leave a comment on the performed exercise:",
                                           self.widget_pages[2])
@@ -683,6 +690,8 @@ class WindowPerformExercise(BasicWidget):
         else:
             self.stacked_widget_perform.setCurrentIndex(
                 self.stacked_widget_perform.currentIndex() + 1)
+        if self.stacked_widget_perform.currentIndex() == 0:
+            self.update_selected_exercise_id()
         self.adjust_buttons()
 
     def back_action(self):
@@ -698,3 +707,21 @@ class WindowPerformExercise(BasicWidget):
         self.stacked_widget_perform.setCurrentIndex(0)
         self.adjust_buttons()
         super().closeEvent(event)
+
+    def update_selected_exercise_id(self):
+        self.selected_exercise_id = self.list_widget_exercises.row_id_dictionary[
+            self.list_widget_exercises.currentRow()
+        ]
+
+
+class ListWidgetExercises(QListWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.row_id_dictionary = {}
+
+    def populate_exercises_list(self, exercises):
+        self.clear()
+        for i, exercise in enumerate(exercises):
+            self.row_id_dictionary[i] = exercise[0]
+            self.addItem(QListWidgetItem(exercise[1]))
+        self.setCurrentRow(0)

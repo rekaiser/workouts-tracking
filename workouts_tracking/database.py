@@ -100,7 +100,7 @@ class Database:
 
     def get_exercise_names(self):
         with self.connection:
-            self.cursor.execute("SELECT name FROM exercise;")
+            self.cursor.execute("SELECT name FROM exercise ORDER BY id;")
             raw_exercise_names_tuple = self.cursor.fetchall()
         exercise_names = []
         for raw_tuple in raw_exercise_names_tuple:
@@ -156,14 +156,22 @@ class Database:
                                 [measure_type_id])
             return self.cursor.fetchone()
 
-    def get_exercises(self, with_id=True):
+    def get_exercises(self, with_id=True, order_by_id=True):
         with self.connection:
-            if with_id:
-                self.cursor.execute("SELECT id, name, comment, url, category_id, difficulty_id "
-                                    "FROM exercise;")
+            if order_by_id:
+                if with_id:
+                    self.cursor.execute("SELECT id, name, comment, url, category_id, difficulty_id "
+                                        "FROM exercise ORDER BY id;")
+                else:
+                    self.cursor.execute("SELECT name, comment, url, category_id, difficulty_id "
+                                        "FROM exercise ORDER BY id;")
             else:
-                self.cursor.execute("SELECT name, comment, url, category_id, difficulty_id "
-                                    "FROM exercise;")
+                if with_id:
+                    self.cursor.execute("SELECT id, name, comment, url, category_id, difficulty_id "
+                                        "FROM exercise;")
+                else:
+                    self.cursor.execute("SELECT name, comment, url, category_id, difficulty_id "
+                                        "FROM exercise;")
             return self.cursor.fetchall()
 
     def get_id_for_exercise_name(self, name):
