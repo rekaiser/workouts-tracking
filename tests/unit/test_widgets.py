@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import (QSplitter, QLayout, QHBoxLayout, QWidget, QVBoxLayout, QTableWidget,
                                QLabel, QPushButton, QGridLayout, QFormLayout, QLineEdit,
-                               QFileDialog, QPlainTextEdit, QCheckBox, QRadioButton,
+                               QFileDialog, QPlainTextEdit, QCheckBox, QRadioButton, QStackedWidget,
+                               QGroupBox, QListWidget,
                                )
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon
@@ -572,6 +573,75 @@ class TestWindowPerformExercise:
         assert mwf.window_perform_exercise.isVisible()
         mwf.widget_main.widget_right.groupbox_workout.button_finish.click()
         mwf.close_database()
+
+    def test_layout(self, main_window_fixture):
+        wpe = main_window_fixture.window_perform_exercise
+        assert isinstance(wpe.layout(), QVBoxLayout)
+        list_widgets_widget_classes = [
+            (wpe.stacked_widget_perform, QStackedWidget),
+            (wpe.group_box_buttons, QGroupBox),
+        ]
+        for i, (widget, widget_class) in enumerate(list_widgets_widget_classes):
+            assert isinstance(widget, widget_class)
+            assert isinstance(wpe.layout().itemAt(i).widget(), widget_class)
+
+    def test_layout_group_box_buttons(self, main_window_fixture):
+        wpe = main_window_fixture.window_perform_exercise
+        assert isinstance(wpe.group_box_buttons.layout(), QHBoxLayout)
+        list_buttons_button_classes = [
+            (wpe.button_cancel, QPushButton),
+            (wpe.button_back, QPushButton),
+            (wpe.button_continue, QPushButton),
+        ]
+        button_texts = ["Cancel", "Back", "Continue"]
+        for i, (button, button_class) in enumerate(list_buttons_button_classes):
+            assert isinstance(button, button_class)
+            assert isinstance(wpe.group_box_buttons.layout().itemAt(i).widget(), button_class)
+            assert button.text() == button_texts[i]
+
+    def test_perform_exercise_buttons(self, main_window_fixture, database_filename_fixture):
+        wpe = main_window_fixture.window_perform_exercise
+        main_window_fixture.new_database(database_filename_fixture)
+        main_window_fixture.widget_main.widget_right.groupbox_workout.button_start.click()
+        main_window_fixture.widget_main.widget_right.groupbox_exercise.button_perform.click()
+        assert wpe.isVisible()
+        assert wpe.stacked_widget_perform.currentIndex() == 0
+        assert not wpe.button_back.isEnabled()
+        wpe.button_continue.click()
+        assert wpe.stacked_widget_perform.currentIndex() == 1
+        wpe.button_back.click()
+        assert wpe.stacked_widget_perform.currentIndex() == 0
+        wpe.button_continue.click()
+        wpe.button_continue.click()
+        assert wpe.stacked_widget_perform.currentIndex() == 2
+        assert wpe.button_continue.text() == "Finish"
+        wpe.button_back.click()
+        assert wpe.stacked_widget_perform.currentIndex() == 1
+        assert wpe.button_continue.text() == "Continue"
+        wpe.button_continue.click()
+        wpe.button_continue.click()
+        assert wpe.stacked_widget_perform.currentIndex() == 0
+        wpe.button_cancel.click()
+        assert not wpe.isVisible()
+        main_window_fixture.widget_main.widget_right.groupbox_workout.button_finish.click()
+
+    def test_stacked_widget_perform(self, main_window_fixture):
+        wpe = main_window_fixture.window_perform_exercise
+        assert wpe.stacked_widget_perform.count() == 3
+        for i in range(3):
+            assert isinstance(wpe.stacked_widget_perform.widget(i), QWidget)
+            assert wpe.widget_pages[i] == wpe.stacked_widget_perform.widget(i)
+
+    def test_layout_widget_page0(self, main_window_fixture):
+        wpe = main_window_fixture.window_perform_exercise
+        assert isinstance(wpe.widget_pages[0].layout(), QVBoxLayout)
+        list_widgets_widget_classes = [
+            (wpe.label_title_page0, QLabel),
+            (wpe.list_widget_exercises, QListWidget),
+        ]
+        for i, (widget, widget_class) in enumerate(list_widgets_widget_classes):
+            assert isinstance(wpe.widget_pages[0].layout().itemAt(i).widget(), widget_class)
+            assert isinstance(widget, widget_class)
 
 
 class TestWorkoutActions:

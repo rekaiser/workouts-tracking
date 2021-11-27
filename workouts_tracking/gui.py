@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QSplitter, QHBoxLayout
                                QVBoxLayout, QTableWidget, QLabel, QFrame, QGroupBox, QComboBox,
                                QPushButton, QGridLayout, QFormLayout, QLineEdit,
                                QFileDialog, QErrorMessage, QPlainTextEdit, QCheckBox,
-                               QTableWidgetItem, QRadioButton,
+                               QTableWidgetItem, QRadioButton, QStackedWidget, QListWidget,
                                )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent, QIcon
@@ -628,3 +628,59 @@ class WindowPerformExercise(BasicWidget):
         self.setWindowTitle("Perform Exercise")
         self.setWindowModality(Qt.WindowModal)
         self.setLayout(QVBoxLayout(self))
+        self.stacked_widget_perform = QStackedWidget(self)
+        self.layout().addWidget(self.stacked_widget_perform)
+        self.group_box_buttons = QGroupBox(self)
+        self.layout().addWidget(self.group_box_buttons)
+
+        self.group_box_buttons.setLayout(QHBoxLayout(self.group_box_buttons))
+        self.button_cancel = QPushButton("Cancel", self.group_box_buttons)
+        self.button_cancel.clicked.connect(self.cancel_action)
+        self.button_back = QPushButton("Back", self.group_box_buttons)
+        self.button_back.clicked.connect(self.back_action)
+        self.button_continue = QPushButton("Continue", self.group_box_buttons)
+        self.button_continue.clicked.connect(self.continue_action)
+        self.group_box_buttons.layout().addWidget(self.button_cancel)
+        self.group_box_buttons.layout().addWidget(self.button_back)
+        self.group_box_buttons.layout().addWidget(self.button_continue)
+
+        self.widget_pages = [QWidget(self.stacked_widget_perform),
+                             QWidget(self.stacked_widget_perform),
+                             QWidget(self.stacked_widget_perform)]
+        for widget_page in self.widget_pages:
+            self.stacked_widget_perform.addWidget(widget_page)
+
+        self.widget_pages[0].setLayout(QVBoxLayout(self.widget_pages[0]))
+        self.label_title_page0 = QLabel("Choose one exercise to perform:", self.widget_pages[0])
+        self.list_widget_exercises = QListWidget(self.widget_pages[0])
+        self.widget_pages[0].layout().addWidget(self.label_title_page0)
+        self.widget_pages[0].layout().addWidget(self.list_widget_exercises)
+
+        self.adjust_buttons()
+
+    def adjust_buttons(self):
+        if self.stacked_widget_perform.currentIndex() == 0:
+            self.button_back.setEnabled(False)
+        else:
+            self.button_back.setEnabled(True)
+        if self.stacked_widget_perform.currentIndex() == 2:
+            self.button_continue.setText("Finish")
+        else:
+            self.button_continue.setText("Continue")
+
+    def continue_action(self):
+        if self.stacked_widget_perform.currentIndex() == 2:
+            self.stacked_widget_perform.setCurrentIndex(0)
+        else:
+            self.stacked_widget_perform.setCurrentIndex(
+                self.stacked_widget_perform.currentIndex() + 1)
+        self.adjust_buttons()
+
+    def back_action(self):
+        if self.stacked_widget_perform.currentIndex() != 0:
+            self.stacked_widget_perform.setCurrentIndex(
+                self.stacked_widget_perform.currentIndex() - 1)
+        self.adjust_buttons()
+
+    def cancel_action(self):
+        self.close()
