@@ -693,3 +693,8 @@ class WindowPerformExercise(BasicWidget):
 
     def cancel_action(self):
         self.close()
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        self.stacked_widget_perform.setCurrentIndex(0)
+        self.adjust_buttons()
+        super().closeEvent(event)

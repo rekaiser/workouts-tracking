@@ -623,6 +623,7 @@ class TestWindowPerformExercise:
         assert wpe.stacked_widget_perform.currentIndex() == 0
         wpe.button_cancel.click()
         assert not wpe.isVisible()
+        assert wpe.stacked_widget_perform.currentIndex() == 0
         main_window_fixture.widget_main.widget_right.groupbox_workout.button_finish.click()
 
     def test_stacked_widget_perform(self, main_window_fixture):
