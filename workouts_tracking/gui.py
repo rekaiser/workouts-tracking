@@ -652,7 +652,7 @@ class WindowPerformExercise(BasicWidget):
         self.group_box_buttons.layout().addWidget(self.button_continue)
 
         self.widget_pages = [QWidget(self.stacked_widget_perform),
-                             QWidget(self.stacked_widget_perform),
+                             WidgetMeasurePerformance(self.stacked_widget_perform),
                              QWidget(self.stacked_widget_perform)]
         for widget_page in self.widget_pages:
             self.stacked_widget_perform.addWidget(widget_page)
@@ -725,3 +725,9 @@ class ListWidgetExercises(QListWidget):
             self.row_id_dictionary[i] = exercise[0]
             self.addItem(QListWidgetItem(exercise[1]))
         self.setCurrentRow(0)
+
+
+class WidgetMeasurePerformance(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setLayout(QGridLayout(self))

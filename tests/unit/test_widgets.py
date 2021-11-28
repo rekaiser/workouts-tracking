@@ -10,7 +10,7 @@ from workouts_tracking.gui import (HLineSunken, ComboboxCategory, GroupBoxDataba
                                    GroupBoxWorkout, GroupBoxExercise, GroupBoxExercises,
                                    ComboboxDifficulty, WindowNewExercise, GroupBoxMuscleGroups,
                                    WindowAddMeasure, ComboboxMeasureTypes, WindowPerformExercise,
-                                   ListWidgetExercises,
+                                   ListWidgetExercises, WidgetMeasurePerformance,
                                    )
 
 from workouts_tracking.constants import (
@@ -630,8 +630,13 @@ class TestWindowPerformExercise:
     def test_stacked_widget_perform(self, main_window_fixture):
         wpe = main_window_fixture.window_perform_exercise
         assert wpe.stacked_widget_perform.count() == 3
-        for i in range(3):
-            assert isinstance(wpe.stacked_widget_perform.widget(i), QWidget)
+        list_widgets_widget_classes = [
+            (wpe.widget_pages[0], QWidget),
+            (wpe.widget_pages[1], WidgetMeasurePerformance),
+            (wpe.widget_pages[2], QWidget),
+        ]
+        for i, (widget, widget_class) in enumerate(list_widgets_widget_classes):
+            assert isinstance(widget, widget_class)
             assert wpe.widget_pages[i] == wpe.stacked_widget_perform.widget(i)
 
     def test_layout_widget_page0(self, main_window_fixture):
@@ -694,3 +699,9 @@ class TestWorkoutActions:
         mwf.widget_main.widget_right.groupbox_workout.button_start.click()
         mwf.widget_main.widget_right.groupbox_workout.button_finish.click()
         assert mwf.widget_main.widget_right.groupbox_workout.current_workout.status == "finished"
+
+
+class TestWidgetMeasurePerformance:
+    def test_basic_layout(self, main_window_fixture):
+        wmp = main_window_fixture.window_perform_exercise.widget_pages[1]
+        assert isinstance(wmp.layout(), QGridLayout)
