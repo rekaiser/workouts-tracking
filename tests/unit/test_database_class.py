@@ -246,3 +246,11 @@ class TestDatabaseMethods:
     def test_new_workout(self, tmp_path):
         test_database = Database(tmp_path / "test_database.db")
 
+    def test_get_measures_for_exercise(self, sample_database_filename_fixture):
+        sample_database = Database(sample_database_filename_fixture)
+        measures = sample_database.get_measures_for_exercise(1)
+        measure1 = Measure("Running distance", 7, False)
+        measure2 = Measure("Running duration", 2, False)
+        assert measure1 in measures
+        assert measure2 in measures
+

@@ -213,3 +213,11 @@ class Database:
                                 "FROM exercise e, difficulty d, category c "
                                 "WHERE e.category_id = c.id AND e.difficulty_id = d.id;")
             return self.cursor.fetchall()
+
+    def get_measures_for_exercise(self, exercise_id):
+        measures = []
+        with self.connection:
+            self.cursor.execute("SELECT name, type_id, per_set FROM measure WHERE exercise_id = ?", str(exercise_id))
+            for measure in self.cursor.fetchall():
+                measures.append(Measure(*measure))
+        return measures
